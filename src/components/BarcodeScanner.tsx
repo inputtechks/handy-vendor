@@ -21,6 +21,7 @@ export function BarcodeScanner({ onScan, active }: BarcodeScannerProps) {
     scannerRef.current = scanner;
 
     let scanned = false;
+    let running = false;
 
     scanner
       .start(
@@ -34,20 +35,25 @@ export function BarcodeScanner({ onScan, active }: BarcodeScannerProps) {
         (decodedText) => {
           if (scanned) return;
           scanned = true;
-          onScan(decodedText);
+          running = false;
           scanner.stop().catch(() => {});
+          onScan(decodedText);
         },
         () => {}
       )
+      .then(() => {
+        running = true;
+      })
       .catch((err) => {
         setError("Camera access denied or unavailable. Please allow camera access.");
         console.error("Scanner error:", err);
       });
 
     return () => {
-      scanner
-        .stop()
-        .catch(() => {});
+      if (running) {
+        running = false;
+        scanner.stop().catch(() => {});
+      }
     };
   }, [active, onScan]);
 
