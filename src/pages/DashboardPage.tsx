@@ -35,7 +35,7 @@ export default function DashboardPage() {
           </div>
           <div>
             <p className="text-sm font-medium text-muted-foreground">Total Revenue</p>
-            <p className="text-3xl font-black">${totalRevenue.toFixed(2)}</p>
+            <p className="text-3xl font-black">CHF {totalRevenue.toFixed(2)}</p>
           </div>
         </div>
 
@@ -43,13 +43,13 @@ export default function DashboardPage() {
           <div className="rounded-xl bg-cash/10 border border-cash/20 p-4">
             <Banknote className="h-6 w-6 text-cash mb-2" />
             <p className="text-xs font-medium text-muted-foreground">Cash</p>
-            <p className="text-2xl font-black">${cashTotal.toFixed(2)}</p>
+            <p className="text-2xl font-black">CHF {cashTotal.toFixed(2)}</p>
             <p className="text-xs text-muted-foreground">{sales.filter((s) => s.method === "cash").length} sales</p>
           </div>
           <div className="rounded-xl bg-card-pay/10 border border-card-pay/20 p-4">
             <CreditCard className="h-6 w-6 text-card-pay mb-2" />
             <p className="text-xs font-medium text-muted-foreground">Card</p>
-            <p className="text-2xl font-black">${cardTotal.toFixed(2)}</p>
+            <p className="text-2xl font-black">CHF {cardTotal.toFixed(2)}</p>
             <p className="text-xs text-muted-foreground">{sales.filter((s) => s.method === "card").length} sales</p>
           </div>
         </div>
@@ -105,7 +105,7 @@ export default function DashboardPage() {
                   <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${s.method === "cash" ? "bg-cash/20 text-cash" : "bg-card-pay/20 text-card-pay"}`}>
                     {s.method.toUpperCase()}
                   </span>
-                  <span className="font-bold">${s.price.toFixed(2)}</span>
+                  <span className="font-bold">CHF {s.price.toFixed(2)}</span>
                 </div>
               </div>
             ))}

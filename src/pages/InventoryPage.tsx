@@ -167,7 +167,7 @@ export default function InventoryPage() {
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="text-sm font-semibold text-muted-foreground mb-1 block">Sale Price ($)</label>
+                <label className="text-sm font-semibold text-muted-foreground mb-1 block">Sale Price (CHF)</label>
                 <Input
                   type="number"
                   step="0.01"
