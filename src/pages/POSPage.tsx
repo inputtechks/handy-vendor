@@ -37,9 +37,9 @@ export default function POSPage() {
     [getBook]
   );
 
-  const handleSell = (method: "cash" | "card") => {
+  const handleSell = async (method: "cash" | "card") => {
     if (!currentBook) return;
-    const sale = sellBook(currentBook.isbn, method);
+    const sale = await sellBook(currentBook.isbn, method);
     if (sale) {
       setLastMethod(method);
       setStage("done");

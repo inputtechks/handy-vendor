@@ -14,7 +14,72 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      books: {
+        Row: {
+          author: string
+          cover_url: string
+          created_at: string
+          id: string
+          isbn: string
+          quantity: number
+          sale_price: number
+          title: string
+          vendor_id: string
+        }
+        Insert: {
+          author?: string
+          cover_url?: string
+          created_at?: string
+          id?: string
+          isbn: string
+          quantity?: number
+          sale_price: number
+          title?: string
+          vendor_id: string
+        }
+        Update: {
+          author?: string
+          cover_url?: string
+          created_at?: string
+          id?: string
+          isbn?: string
+          quantity?: number
+          sale_price?: number
+          title?: string
+          vendor_id?: string
+        }
+        Relationships: []
+      }
+      sales: {
+        Row: {
+          id: string
+          isbn: string
+          method: string
+          price: number
+          sold_at: string
+          title: string
+          vendor_id: string
+        }
+        Insert: {
+          id?: string
+          isbn: string
+          method: string
+          price: number
+          sold_at?: string
+          title: string
+          vendor_id: string
+        }
+        Update: {
+          id?: string
+          isbn?: string
+          method?: string
+          price?: number
+          sold_at?: string
+          title?: string
+          vendor_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

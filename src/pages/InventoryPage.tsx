@@ -31,12 +31,12 @@ export default function InventoryPage() {
     setStage("form");
   }, []);
 
-  const handleAdd = () => {
+  const handleAdd = async () => {
     const p = parseFloat(price);
     const q = parseInt(qty);
     if (!isbn || isNaN(p) || p <= 0 || isNaN(q) || q <= 0) return;
 
-    addBook({
+    await addBook({
       isbn,
       title: editTitle.trim() || "Unknown Title",
       author: editAuthor.trim() || "Unknown Author",
@@ -241,7 +241,7 @@ export default function InventoryPage() {
                     </AlertDialogHeader>
                     <AlertDialogFooter>
                       <AlertDialogCancel>Cancel</AlertDialogCancel>
-                      <AlertDialogAction onClick={() => removeBook(b.isbn)}>Remove</AlertDialogAction>
+                      <AlertDialogAction onClick={async () => await removeBook(b.isbn)}>Remove</AlertDialogAction>
                     </AlertDialogFooter>
                   </AlertDialogContent>
                 </AlertDialog>
