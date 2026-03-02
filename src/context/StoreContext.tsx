@@ -1,61 +1,124 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/context/AuthContext";
 import type { Book, Sale } from "@/types/book";
 
 interface StoreContextType {
   books: Book[];
   sales: Sale[];
-  addBook: (book: Book) => void;
-  updateBook: (isbn: string, updates: Partial<Book>) => void;
-  removeBook: (isbn: string) => void;
+  loading: boolean;
+  addBook: (book: Book) => Promise<void>;
+  updateBook: (isbn: string, updates: Partial<Book>) => Promise<void>;
+  removeBook: (isbn: string) => Promise<void>;
   getBook: (isbn: string) => Book | undefined;
-  sellBook: (isbn: string, method: "cash" | "card") => Sale | null;
+  sellBook: (isbn: string, method: "cash" | "card") => Promise<Sale | null>;
   searchBooks: (query: string) => Book[];
 }
 
 const StoreContext = createContext<StoreContextType | null>(null);
 
-function loadFromStorage<T>(key: string, fallback: T): T {
-  try {
-    const raw = localStorage.getItem(key);
-    return raw ? JSON.parse(raw) : fallback;
-  } catch {
-    return fallback;
-  }
-}
-
 export function StoreProvider({ children }: { children: React.ReactNode }) {
-  const [books, setBooks] = useState<Book[]>(() => loadFromStorage("bb_books", []));
-  const [sales, setSales] = useState<Sale[]>(() => loadFromStorage("bb_sales", []));
+  const { user } = useAuth();
+  const [books, setBooks] = useState<Book[]>([]);
+  const [sales, setSales] = useState<Sale[]>([]);
+  const [loading, setLoading] = useState(true);
 
+  // Fetch books and sales when user changes
   useEffect(() => {
-    localStorage.setItem("bb_books", JSON.stringify(books));
-  }, [books]);
+    if (!user) {
+      setBooks([]);
+      setSales([]);
+      setLoading(false);
+      return;
+    }
 
-  useEffect(() => {
-    localStorage.setItem("bb_sales", JSON.stringify(sales));
-  }, [sales]);
+    const fetchData = async () => {
+      setLoading(true);
+      const [booksRes, salesRes] = await Promise.all([
+        supabase.from("books").select("*").order("created_at", { ascending: false }),
+        supabase.from("sales").select("*").order("sold_at", { ascending: false }),
+      ]);
 
-  const addBook = useCallback((book: Book) => {
-    setBooks((prev) => {
-      const existing = prev.find((b) => b.isbn === book.isbn);
-      if (existing) {
-        return prev.map((b) =>
-          b.isbn === book.isbn
-            ? { ...b, quantity: b.quantity + book.quantity, salePrice: book.salePrice }
-            : b
-        );
+      if (booksRes.data) {
+        setBooks(booksRes.data.map((b) => ({
+          isbn: b.isbn,
+          title: b.title,
+          author: b.author,
+          coverUrl: b.cover_url,
+          salePrice: Number(b.sale_price),
+          quantity: b.quantity,
+        })));
       }
-      return [...prev, book];
-    });
-  }, []);
 
-  const updateBook = useCallback((isbn: string, updates: Partial<Book>) => {
-    setBooks((prev) => prev.map((b) => (b.isbn === isbn ? { ...b, ...updates } : b)));
-  }, []);
+      if (salesRes.data) {
+        setSales(salesRes.data.map((s) => ({
+          id: s.id,
+          isbn: s.isbn,
+          title: s.title,
+          price: Number(s.price),
+          method: s.method as "cash" | "card",
+          timestamp: new Date(s.sold_at).getTime(),
+        })));
+      }
+      setLoading(false);
+    };
 
-  const removeBook = useCallback((isbn: string) => {
-    setBooks((prev) => prev.filter((b) => b.isbn !== isbn));
-  }, []);
+    fetchData();
+  }, [user]);
+
+  const addBook = useCallback(async (book: Book) => {
+    if (!user) return;
+    // Upsert: if ISBN exists for this vendor, add quantity and update price
+    const existing = books.find((b) => b.isbn === book.isbn);
+    if (existing) {
+      const { error } = await supabase
+        .from("books")
+        .update({ quantity: existing.quantity + book.quantity, sale_price: book.salePrice })
+        .eq("vendor_id", user.id)
+        .eq("isbn", book.isbn);
+      if (!error) {
+        setBooks((prev) => prev.map((b) =>
+          b.isbn === book.isbn ? { ...b, quantity: b.quantity + book.quantity, salePrice: book.salePrice } : b
+        ));
+      }
+    } else {
+      const { error } = await supabase.from("books").insert({
+        vendor_id: user.id,
+        isbn: book.isbn,
+        title: book.title,
+        author: book.author,
+        cover_url: book.coverUrl,
+        sale_price: book.salePrice,
+        quantity: book.quantity,
+      });
+      if (!error) {
+        setBooks((prev) => [book, ...prev]);
+      }
+    }
+  }, [user, books]);
+
+  const updateBook = useCallback(async (isbn: string, updates: Partial<Book>) => {
+    if (!user) return;
+    const dbUpdates: Record<string, unknown> = {};
+    if (updates.title !== undefined) dbUpdates.title = updates.title;
+    if (updates.author !== undefined) dbUpdates.author = updates.author;
+    if (updates.coverUrl !== undefined) dbUpdates.cover_url = updates.coverUrl;
+    if (updates.salePrice !== undefined) dbUpdates.sale_price = updates.salePrice;
+    if (updates.quantity !== undefined) dbUpdates.quantity = updates.quantity;
+
+    const { error } = await supabase.from("books").update(dbUpdates).eq("vendor_id", user.id).eq("isbn", isbn);
+    if (!error) {
+      setBooks((prev) => prev.map((b) => (b.isbn === isbn ? { ...b, ...updates } : b)));
+    }
+  }, [user]);
+
+  const removeBook = useCallback(async (isbn: string) => {
+    if (!user) return;
+    const { error } = await supabase.from("books").delete().eq("vendor_id", user.id).eq("isbn", isbn);
+    if (!error) {
+      setBooks((prev) => prev.filter((b) => b.isbn !== isbn));
+    }
+  }, [user]);
 
   const getBook = useCallback(
     (isbn: string) => books.find((b) => b.isbn === isbn),
@@ -63,17 +126,41 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   );
 
   const sellBook = useCallback(
-    (isbn: string, method: "cash" | "card"): Sale | null => {
+    async (isbn: string, method: "cash" | "card"): Promise<Sale | null> => {
+      if (!user) return null;
       const book = books.find((b) => b.isbn === isbn);
       if (!book || book.quantity <= 0) return null;
 
+      // Decrement stock
+      const { error: updateError } = await supabase
+        .from("books")
+        .update({ quantity: book.quantity - 1 })
+        .eq("vendor_id", user.id)
+        .eq("isbn", isbn);
+      if (updateError) return null;
+
+      // Record sale
+      const { data, error: insertError } = await supabase
+        .from("sales")
+        .insert({
+          vendor_id: user.id,
+          isbn,
+          title: book.title,
+          price: book.salePrice,
+          method,
+        })
+        .select()
+        .single();
+
+      if (insertError || !data) return null;
+
       const sale: Sale = {
-        id: crypto.randomUUID(),
+        id: data.id,
         isbn,
         title: book.title,
         price: book.salePrice,
         method,
-        timestamp: Date.now(),
+        timestamp: new Date(data.sold_at).getTime(),
       };
 
       setBooks((prev) =>
@@ -82,7 +169,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       setSales((prev) => [sale, ...prev]);
       return sale;
     },
-    [books]
+    [user, books]
   );
 
   const searchBooks = useCallback(
@@ -99,7 +186,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   );
 
   return (
-    <StoreContext.Provider value={{ books, sales, addBook, updateBook, removeBook, getBook, sellBook, searchBooks }}>
+    <StoreContext.Provider value={{ books, sales, loading, addBook, updateBook, removeBook, getBook, sellBook, searchBooks }}>
       {children}
     </StoreContext.Provider>
   );

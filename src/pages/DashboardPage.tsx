@@ -1,11 +1,13 @@
 import { useStore } from "@/context/StoreContext";
+import { useAuth } from "@/context/AuthContext";
 import { format } from "date-fns";
-import { DollarSign, Banknote, CreditCard, AlertTriangle, Download } from "lucide-react";
+import { DollarSign, Banknote, CreditCard, AlertTriangle, Download, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { exportSalesToCSV } from "@/lib/exportSales";
 
 export default function DashboardPage() {
   const { sales, books } = useStore();
+  const { signOut } = useAuth();
 
   const totalRevenue = sales.reduce((sum, s) => sum + s.price, 0);
   const cashTotal = sales.filter((s) => s.method === "cash").reduce((sum, s) => sum + s.price, 0);
@@ -14,9 +16,15 @@ export default function DashboardPage() {
 
   return (
     <div className="min-h-screen bg-background p-4 pb-24">
-      <header className="mb-6">
-        <h1 className="text-2xl font-black tracking-tight">📊 Dashboard</h1>
-        <p className="text-muted-foreground text-sm mt-1">Today's summary</p>
+      <header className="mb-6 flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-black tracking-tight">📊 Dashboard</h1>
+          <p className="text-muted-foreground text-sm mt-1">Today's summary</p>
+        </div>
+        <Button variant="secondary" size="sm" className="gap-2" onClick={signOut}>
+          <LogOut className="h-4 w-4" />
+          Sign Out
+        </Button>
       </header>
 
       {/* Stats */}
