@@ -4,7 +4,7 @@ import { BarcodeScanner } from "@/components/BarcodeScanner";
 import { BookInfoCard } from "@/components/BookInfoCard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ScanBarcode, Search, Banknote, CreditCard, Check, XCircle } from "lucide-react";
+import { ScanBarcode, Search, Banknote, CreditCard, Check, XCircle, Minus, Plus } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import type { Book } from "@/types/book";
 
@@ -18,12 +18,14 @@ export default function POSPage() {
   const [errorMsg, setErrorMsg] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<Book[]>([]);
+  const [sellQty, setSellQty] = useState(1);
 
   const handleScan = useCallback(
     (code: string) => {
       const book = getBook(code);
       if (book && book.quantity > 0) {
         setCurrentBook(book);
+        setSellQty(1);
         setStage("confirm");
         setErrorMsg("");
       } else if (book) {
@@ -39,16 +41,19 @@ export default function POSPage() {
 
   const handleSell = async (method: "cash" | "card") => {
     if (!currentBook) return;
-    const sale = await sellBook(currentBook.isbn, method);
-    if (sale) {
-      setLastMethod(method);
-      setStage("done");
-      setTimeout(() => {
-        setStage("idle");
-        setCurrentBook(null);
-        setLastMethod(null);
-      }, 2000);
+    // Sell multiple quantities
+    for (let i = 0; i < sellQty; i++) {
+      const sale = await sellBook(currentBook.isbn, method);
+      if (!sale) break;
     }
+    setLastMethod(method);
+    setStage("done");
+    setTimeout(() => {
+      setStage("idle");
+      setCurrentBook(null);
+      setLastMethod(null);
+      setSellQty(1);
+    }, 2000);
   };
 
   const handleSearchSelect = (book: Book) => {
@@ -56,6 +61,7 @@ export default function POSPage() {
     setSearchResults([]);
     if (book.quantity > 0) {
       setCurrentBook(book);
+      setSellQty(1);
       setStage("confirm");
     } else {
       setErrorMsg(`"${book.title}" is out of stock!`);
@@ -67,6 +73,7 @@ export default function POSPage() {
     setStage("idle");
     setCurrentBook(null);
     setErrorMsg("");
+    setSellQty(1);
   };
 
   return (
@@ -128,8 +135,30 @@ export default function POSPage() {
         {stage === "confirm" && currentBook && (
           <motion.div key="confirm" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }} className="flex-1 flex flex-col gap-4">
             <BookInfoCard book={currentBook} />
-            <div className="text-center">
-              <p className="text-4xl font-black text-primary">${currentBook.salePrice.toFixed(2)}</p>
+            <div className="text-center space-y-3">
+              <p className="text-4xl font-black text-primary">CHF {(currentBook.salePrice * sellQty).toFixed(2)}</p>
+              <div className="flex items-center justify-center gap-4">
+                <Button
+                  variant="secondary"
+                  size="icon"
+                  className="h-10 w-10 rounded-full"
+                  onClick={() => setSellQty((q) => Math.max(1, q - 1))}
+                  disabled={sellQty <= 1}
+                >
+                  <Minus className="h-5 w-5" />
+                </Button>
+                <span className="text-2xl font-black w-12 text-center">{sellQty}</span>
+                <Button
+                  variant="secondary"
+                  size="icon"
+                  className="h-10 w-10 rounded-full"
+                  onClick={() => setSellQty((q) => Math.min(currentBook.quantity, q + 1))}
+                  disabled={sellQty >= currentBook.quantity}
+                >
+                  <Plus className="h-5 w-5" />
+                </Button>
+              </div>
+              <p className="text-sm text-muted-foreground">{currentBook.quantity} available</p>
             </div>
             <div className="grid grid-cols-2 gap-3 mt-auto">
               <Button

@@ -24,7 +24,7 @@ export function BookInfoCard({ book, compact }: BookInfoCardProps) {
         <h3 className={`font-bold truncate ${compact ? "text-base" : "text-lg"}`}>{book.title}</h3>
         <p className="text-muted-foreground text-sm truncate">{book.author}</p>
         {book.salePrice !== undefined && (
-          <p className="mt-1 text-primary font-extrabold text-xl">${book.salePrice.toFixed(2)}</p>
+          <p className="mt-1 text-primary font-extrabold text-xl">CHF {book.salePrice.toFixed(2)}</p>
         )}
         {book.quantity !== undefined && (
           <p className={`text-sm font-medium mt-0.5 ${book.quantity <= 1 ? "text-warning" : "text-muted-foreground"}`}>
