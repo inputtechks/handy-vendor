@@ -1,6 +1,8 @@
 import { useStore } from "@/context/StoreContext";
 import { format } from "date-fns";
-import { DollarSign, Banknote, CreditCard, AlertTriangle } from "lucide-react";
+import { DollarSign, Banknote, CreditCard, AlertTriangle, Download } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { exportSalesToCSV } from "@/lib/exportSales";
 
 export default function DashboardPage() {
   const { sales, books } = useStore();
@@ -70,7 +72,15 @@ export default function DashboardPage() {
 
       {/* Sales History */}
       <div>
-        <h2 className="text-lg font-bold mb-3">Recent Sales ({sales.length})</h2>
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="text-lg font-bold">Recent Sales ({sales.length})</h2>
+          {sales.length > 0 && (
+            <Button variant="secondary" size="sm" className="gap-2" onClick={() => exportSalesToCSV(sales)}>
+              <Download className="h-4 w-4" />
+              Export CSV
+            </Button>
+          )}
+        </div>
         {sales.length === 0 ? (
           <p className="text-muted-foreground text-center py-8">No sales yet</p>
         ) : (

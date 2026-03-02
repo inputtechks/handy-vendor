@@ -15,6 +15,8 @@ export default function InventoryPage() {
   const [stage, setStage] = useState<Stage>("idle");
   const [bookData, setBookData] = useState<{ title: string; author: string; coverUrl: string } | null>(null);
   const [isbn, setIsbn] = useState("");
+  const [editTitle, setEditTitle] = useState("");
+  const [editAuthor, setEditAuthor] = useState("");
   const [price, setPrice] = useState("");
   const [qty, setQty] = useState("1");
   const [searchQuery, setSearchQuery] = useState("");
@@ -26,9 +28,13 @@ export default function InventoryPage() {
     const result = await lookupBookByISBN(code);
     if (result) {
       setBookData(result);
+      setEditTitle(result.title);
+      setEditAuthor(result.author);
       setStage("found");
     } else {
       setBookData(null);
+      setEditTitle("");
+      setEditAuthor("");
       setStage("manual");
     }
   }, []);
@@ -39,9 +45,13 @@ export default function InventoryPage() {
     const result = await lookupBookByISBN(isbn.trim());
     if (result) {
       setBookData(result);
+      setEditTitle(result.title);
+      setEditAuthor(result.author);
       setStage("found");
     } else {
       setBookData(null);
+      setEditTitle("");
+      setEditAuthor("");
       setStage("manual");
     }
   };
@@ -53,8 +63,8 @@ export default function InventoryPage() {
 
     addBook({
       isbn,
-      title: bookData?.title || "Unknown Title",
-      author: bookData?.author || "Unknown Author",
+      title: editTitle.trim() || "Unknown Title",
+      author: editAuthor.trim() || "Unknown Author",
       coverUrl: bookData?.coverUrl || "",
       salePrice: p,
       quantity: q,
@@ -65,6 +75,8 @@ export default function InventoryPage() {
       setStage("idle");
       setBookData(null);
       setIsbn("");
+      setEditTitle("");
+      setEditAuthor("");
       setPrice("");
       setQty("1");
     }, 1500);
@@ -79,6 +91,8 @@ export default function InventoryPage() {
     setStage("idle");
     setBookData(null);
     setIsbn("");
+    setEditTitle("");
+    setEditAuthor("");
     setPrice("");
     setQty("1");
   };
@@ -167,6 +181,26 @@ export default function InventoryPage() {
                 Book not found in database. It will be added with ISBN: {isbn}
               </p>
             )}
+            <div className="space-y-2">
+              <div>
+                <label className="text-sm font-semibold text-muted-foreground mb-1 block">Book Title</label>
+                <Input
+                  placeholder="Enter book title"
+                  value={editTitle}
+                  onChange={(e) => setEditTitle(e.target.value)}
+                  className="h-12 text-base bg-secondary"
+                />
+              </div>
+              <div>
+                <label className="text-sm font-semibold text-muted-foreground mb-1 block">Author</label>
+                <Input
+                  placeholder="Enter author name"
+                  value={editAuthor}
+                  onChange={(e) => setEditAuthor(e.target.value)}
+                  className="h-12 text-base bg-secondary"
+                />
+              </div>
+            </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className="text-sm font-semibold text-muted-foreground mb-1 block">Sale Price ($)</label>

@@ -20,12 +20,22 @@ export function BarcodeScanner({ onScan, active }: BarcodeScannerProps) {
     const scanner = new Html5Qrcode(scannerId);
     scannerRef.current = scanner;
 
+    let scanned = false;
+
     scanner
       .start(
         { facingMode: "environment" },
-        { fps: 10, qrbox: { width: 280, height: 150 } },
+        {
+          fps: 30,
+          qrbox: { width: 320, height: 180 },
+          disableFlip: false,
+          aspectRatio: 1.777,
+        },
         (decodedText) => {
+          if (scanned) return;
+          scanned = true;
           onScan(decodedText);
+          scanner.stop().catch(() => {});
         },
         () => {}
       )
