@@ -2,18 +2,20 @@ import { useState, useCallback } from "react";
 import { useStore } from "@/context/StoreContext";
 import { BarcodeScanner } from "@/components/BarcodeScanner";
 import { BookInfoCard } from "@/components/BookInfoCard";
-import { lookupBookByISBN } from "@/lib/bookApi";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, Plus, ScanBarcode, Loader2, Check } from "lucide-react";
+import { Search, Plus, ScanBarcode, Check, Trash2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
-type Stage = "idle" | "scanning" | "loading" | "found" | "manual" | "added";
+type Stage = "idle" | "scanning" | "form" | "added";
 
 export default function InventoryPage() {
-  const { addBook, books, searchBooks } = useStore();
+  const { addBook, removeBook, books, searchBooks } = useStore();
   const [stage, setStage] = useState<Stage>("idle");
-  const [bookData, setBookData] = useState<{ title: string; author: string; coverUrl: string } | null>(null);
   const [isbn, setIsbn] = useState("");
   const [editTitle, setEditTitle] = useState("");
   const [editAuthor, setEditAuthor] = useState("");
@@ -22,39 +24,12 @@ export default function InventoryPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<typeof books>([]);
 
-  const handleScan = useCallback(async (code: string) => {
+  const handleScan = useCallback((code: string) => {
     setIsbn(code);
-    setStage("loading");
-    const result = await lookupBookByISBN(code);
-    if (result) {
-      setBookData(result);
-      setEditTitle(result.title);
-      setEditAuthor(result.author);
-      setStage("found");
-    } else {
-      setBookData(null);
-      setEditTitle("");
-      setEditAuthor("");
-      setStage("manual");
-    }
+    setEditTitle("");
+    setEditAuthor("");
+    setStage("form");
   }, []);
-
-  const handleManualLookup = async () => {
-    if (!isbn.trim()) return;
-    setStage("loading");
-    const result = await lookupBookByISBN(isbn.trim());
-    if (result) {
-      setBookData(result);
-      setEditTitle(result.title);
-      setEditAuthor(result.author);
-      setStage("found");
-    } else {
-      setBookData(null);
-      setEditTitle("");
-      setEditAuthor("");
-      setStage("manual");
-    }
-  };
 
   const handleAdd = () => {
     const p = parseFloat(price);
@@ -65,7 +40,7 @@ export default function InventoryPage() {
       isbn,
       title: editTitle.trim() || "Unknown Title",
       author: editAuthor.trim() || "Unknown Author",
-      coverUrl: bookData?.coverUrl || "",
+      coverUrl: "",
       salePrice: p,
       quantity: q,
     });
@@ -73,7 +48,6 @@ export default function InventoryPage() {
     setStage("added");
     setTimeout(() => {
       setStage("idle");
-      setBookData(null);
       setIsbn("");
       setEditTitle("");
       setEditAuthor("");
@@ -89,7 +63,6 @@ export default function InventoryPage() {
 
   const reset = () => {
     setStage("idle");
-    setBookData(null);
     setIsbn("");
     setEditTitle("");
     setEditAuthor("");
@@ -145,13 +118,13 @@ export default function InventoryPage() {
             </Button>
             <div className="flex gap-2">
               <Input
-                placeholder="Enter ISBN manually"
+                placeholder="Enter barcode manually"
                 value={isbn}
                 onChange={(e) => setIsbn(e.target.value)}
                 className="h-12 text-base bg-secondary"
               />
-              <Button onClick={handleManualLookup} variant="secondary" className="h-12 px-4">
-                <Search className="h-5 w-5" />
+              <Button onClick={() => { if (isbn.trim()) { setStage("form"); } }} variant="secondary" className="h-12 px-4">
+                <Plus className="h-5 w-5" />
               </Button>
             </div>
           </motion.div>
@@ -166,21 +139,12 @@ export default function InventoryPage() {
           </motion.div>
         )}
 
-        {stage === "loading" && (
-          <motion.div key="loading" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex flex-col items-center py-12">
-            <Loader2 className="h-10 w-10 animate-spin text-primary" />
-            <p className="mt-3 text-muted-foreground font-medium">Looking up ISBN: {isbn}</p>
-          </motion.div>
-        )}
-
-        {(stage === "found" || stage === "manual") && (
+        {stage === "form" && (
           <motion.div key="form" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="space-y-4">
-            {bookData && <BookInfoCard book={bookData} />}
-            {stage === "manual" && (
-              <p className="text-warning text-sm font-medium text-center">
-                Book not found in database. It will be added with ISBN: {isbn}
-              </p>
-            )}
+            <div className="rounded-lg bg-secondary/50 border border-border p-3 text-center">
+              <p className="text-xs font-medium text-muted-foreground">Scanned Barcode</p>
+              <p className="text-lg font-black font-mono tracking-wider">{isbn}</p>
+            </div>
             <div className="space-y-2">
               <div>
                 <label className="text-sm font-semibold text-muted-foreground mb-1 block">Book Title</label>
@@ -258,7 +222,30 @@ export default function InventoryPage() {
           <h2 className="text-lg font-bold mb-3">Current Stock ({books.length})</h2>
           <div className="space-y-2">
             {books.map((b) => (
-              <BookInfoCard key={b.isbn} book={b} compact />
+              <div key={b.isbn} className="flex items-center gap-2">
+                <div className="flex-1 min-w-0">
+                  <BookInfoCard book={b} compact />
+                </div>
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button variant="destructive" size="icon" className="h-10 w-10 shrink-0">
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Remove "{b.title}"?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        This will permanently remove this book from your inventory.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction onClick={() => removeBook(b.isbn)}>Remove</AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              </div>
             ))}
           </div>
         </div>

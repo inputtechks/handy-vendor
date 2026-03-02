@@ -6,6 +6,7 @@ interface StoreContextType {
   sales: Sale[];
   addBook: (book: Book) => void;
   updateBook: (isbn: string, updates: Partial<Book>) => void;
+  removeBook: (isbn: string) => void;
   getBook: (isbn: string) => Book | undefined;
   sellBook: (isbn: string, method: "cash" | "card") => Sale | null;
   searchBooks: (query: string) => Book[];
@@ -52,6 +53,10 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     setBooks((prev) => prev.map((b) => (b.isbn === isbn ? { ...b, ...updates } : b)));
   }, []);
 
+  const removeBook = useCallback((isbn: string) => {
+    setBooks((prev) => prev.filter((b) => b.isbn !== isbn));
+  }, []);
+
   const getBook = useCallback(
     (isbn: string) => books.find((b) => b.isbn === isbn),
     [books]
@@ -94,7 +99,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   );
 
   return (
-    <StoreContext.Provider value={{ books, sales, addBook, updateBook, getBook, sellBook, searchBooks }}>
+    <StoreContext.Provider value={{ books, sales, addBook, updateBook, removeBook, getBook, sellBook, searchBooks }}>
       {children}
     </StoreContext.Provider>
   );
