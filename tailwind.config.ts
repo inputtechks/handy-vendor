@@ -58,6 +58,10 @@ export default {
           DEFAULT: "hsl(var(--card-pay))",
           foreground: "hsl(var(--card-pay-foreground))",
         },
+        twint: {
+          DEFAULT: "hsl(var(--twint))",
+          foreground: "hsl(var(--twint-foreground))",
+        },
         warning: {
           DEFAULT: "hsl(var(--warning))",
           foreground: "hsl(var(--warning-foreground))",

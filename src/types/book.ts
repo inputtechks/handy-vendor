@@ -12,6 +12,7 @@ export interface Sale {
   isbn: string;
   title: string;
   price: number;
-  method: "cash" | "card";
+  method: "cash" | "card" | "twint";
+  discount: number;
   timestamp: number;
 }

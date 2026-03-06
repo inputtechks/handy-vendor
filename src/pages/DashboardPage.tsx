@@ -1,7 +1,7 @@
 import { useStore } from "@/context/StoreContext";
 import { useAuth } from "@/context/AuthContext";
 import { format } from "date-fns";
-import { DollarSign, Banknote, CreditCard, AlertTriangle, Download, LogOut } from "lucide-react";
+import { DollarSign, Banknote, CreditCard, Smartphone, AlertTriangle, Download, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { exportSalesToCSV } from "@/lib/exportSales";
 
@@ -12,6 +12,7 @@ export default function DashboardPage() {
   const totalRevenue = sales.reduce((sum, s) => sum + s.price, 0);
   const cashTotal = sales.filter((s) => s.method === "cash").reduce((sum, s) => sum + s.price, 0);
   const cardTotal = sales.filter((s) => s.method === "card").reduce((sum, s) => sum + s.price, 0);
+  const twintTotal = sales.filter((s) => s.method === "twint").reduce((sum, s) => sum + s.price, 0);
   const lowStock = books.filter((b) => b.quantity <= 1);
 
   return (
@@ -39,18 +40,24 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-3 gap-3">
           <div className="rounded-xl bg-cash/10 border border-cash/20 p-4">
             <Banknote className="h-6 w-6 text-cash mb-2" />
             <p className="text-xs font-medium text-muted-foreground">Cash</p>
-            <p className="text-2xl font-black">CHF {cashTotal.toFixed(2)}</p>
+            <p className="text-xl font-black">CHF {cashTotal.toFixed(2)}</p>
             <p className="text-xs text-muted-foreground">{sales.filter((s) => s.method === "cash").length} sales</p>
           </div>
           <div className="rounded-xl bg-card-pay/10 border border-card-pay/20 p-4">
             <CreditCard className="h-6 w-6 text-card-pay mb-2" />
             <p className="text-xs font-medium text-muted-foreground">Card</p>
-            <p className="text-2xl font-black">CHF {cardTotal.toFixed(2)}</p>
+            <p className="text-xl font-black">CHF {cardTotal.toFixed(2)}</p>
             <p className="text-xs text-muted-foreground">{sales.filter((s) => s.method === "card").length} sales</p>
+          </div>
+          <div className="rounded-xl bg-twint/10 border border-twint/20 p-4">
+            <Smartphone className="h-6 w-6 text-twint mb-2" />
+            <p className="text-xs font-medium text-muted-foreground">Twint</p>
+            <p className="text-xl font-black">CHF {twintTotal.toFixed(2)}</p>
+            <p className="text-xs text-muted-foreground">{sales.filter((s) => s.method === "twint").length} sales</p>
           </div>
         </div>
       </div>
@@ -102,7 +109,7 @@ export default function DashboardPage() {
                   </p>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${s.method === "cash" ? "bg-cash/20 text-cash" : "bg-card-pay/20 text-card-pay"}`}>
+                  <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${s.method === "cash" ? "bg-cash/20 text-cash" : s.method === "twint" ? "bg-twint/20 text-twint" : "bg-card-pay/20 text-card-pay"}`}>
                     {s.method.toUpperCase()}
                   </span>
                   <span className="font-bold">CHF {s.price.toFixed(2)}</span>

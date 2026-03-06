@@ -11,7 +11,7 @@ interface StoreContextType {
   updateBook: (isbn: string, updates: Partial<Book>) => Promise<void>;
   removeBook: (isbn: string) => Promise<void>;
   getBook: (isbn: string) => Book | undefined;
-  sellBook: (isbn: string, method: "cash" | "card") => Promise<Sale | null>;
+  sellBook: (isbn: string, method: "cash" | "card" | "twint", qty: number, discount: number) => Promise<Sale | null>;
   searchBooks: (query: string) => Book[];
 }
 
@@ -56,7 +56,8 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
           isbn: s.isbn,
           title: s.title,
           price: Number(s.price),
-          method: s.method as "cash" | "card",
+          method: s.method as "cash" | "card" | "twint",
+          discount: Number((s as any).discount ?? 0),
           timestamp: new Date(s.sold_at).getTime(),
         })));
       }
@@ -126,18 +127,20 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   );
 
   const sellBook = useCallback(
-    async (isbn: string, method: "cash" | "card"): Promise<Sale | null> => {
+    async (isbn: string, method: "cash" | "card" | "twint", qty: number, discount: number): Promise<Sale | null> => {
       if (!user) return null;
       const book = books.find((b) => b.isbn === isbn);
-      if (!book || book.quantity <= 0) return null;
+      if (!book || book.quantity < qty) return null;
 
       // Decrement stock
       const { error: updateError } = await supabase
         .from("books")
-        .update({ quantity: book.quantity - 1 })
+        .update({ quantity: book.quantity - qty })
         .eq("vendor_id", user.id)
         .eq("isbn", isbn);
       if (updateError) return null;
+
+      const finalPrice = book.salePrice - discount;
 
       // Record sale
       const { data, error: insertError } = await supabase
@@ -146,7 +149,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
           vendor_id: user.id,
           isbn,
           title: book.title,
-          price: book.salePrice,
+          price: finalPrice * qty,
           method,
         })
         .select()
@@ -158,13 +161,14 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
         id: data.id,
         isbn,
         title: book.title,
-        price: book.salePrice,
+        price: finalPrice * qty,
         method,
+        discount,
         timestamp: new Date(data.sold_at).getTime(),
       };
 
       setBooks((prev) =>
-        prev.map((b) => (b.isbn === isbn ? { ...b, quantity: b.quantity - 1 } : b))
+        prev.map((b) => (b.isbn === isbn ? { ...b, quantity: b.quantity - qty } : b))
       );
       setSales((prev) => [sale, ...prev]);
       return sale;

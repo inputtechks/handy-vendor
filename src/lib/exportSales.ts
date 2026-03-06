@@ -4,13 +4,14 @@ import { format } from "date-fns";
 export function exportSalesToCSV(sales: Sale[]) {
   if (sales.length === 0) return;
 
-  const header = "Title,ISBN,Price,Payment Method,Date,Time";
+  const header = "Title,ISBN,Price,Discount,Payment Method,Date,Time";
   const rows = sales.map((s) => {
     const date = new Date(s.timestamp);
     return [
       `"${s.title.replace(/"/g, '""')}"`,
       s.isbn,
       s.price.toFixed(2),
+      (s.discount ?? 0).toFixed(2),
       s.method.toUpperCase(),
       format(date, "yyyy-MM-dd"),
       format(date, "HH:mm:ss"),
