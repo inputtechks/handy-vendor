@@ -109,7 +109,7 @@ export default function DashboardPage() {
                   </p>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${s.method === "cash" ? "bg-cash/20 text-cash" : "bg-card-pay/20 text-card-pay"}`}>
+                  <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${s.method === "cash" ? "bg-cash/20 text-cash" : s.method === "twint" ? "bg-twint/20 text-twint" : "bg-card-pay/20 text-card-pay"}`}>
                     {s.method.toUpperCase()}
                   </span>
                   <span className="font-bold">CHF {s.price.toFixed(2)}</span>
