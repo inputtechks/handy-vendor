@@ -58,7 +58,7 @@ export default function POSPage() {
       return;
     }
 
-    const sale = await sellBook(currentBook.isbn, method, sellQty, discount);
+    const sale = await sellBook(currentBook.isbn, method, sellQty, discount, "retail");
     if (!sale) return;
     setLastMethod(method);
     setStage("done");
