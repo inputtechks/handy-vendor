@@ -1,34 +1,83 @@
 import { useState, useMemo } from "react";
 import { useStore } from "@/context/StoreContext";
 import { useAuth } from "@/context/AuthContext";
-import { format, startOfDay, endOfDay, isWithinInterval } from "date-fns";
+import { format, startOfDay, endOfDay } from "date-fns";
 import { DollarSign, Banknote, CreditCard, Smartphone, AlertTriangle, Download, LogOut, ArrowRightLeft, CalendarIcon, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { exportSalesToCSV, exportRevenueByCategoryCSV } from "@/lib/exportSales";
 import { TRANSACTION_LABELS, REVENUE_TYPES, ZERO_REVENUE_TYPES } from "@/types/book";
+import type { Sale } from "@/types/book";
 import { cn } from "@/lib/utils";
+
+function DateRangePicker({
+  dateFrom, dateTo, onFromChange, onToChange, onClear,
+}: {
+  dateFrom?: Date; dateTo?: Date;
+  onFromChange: (d: Date | undefined) => void;
+  onToChange: (d: Date | undefined) => void;
+  onClear: () => void;
+}) {
+  const hasFilter = dateFrom || dateTo;
+  return (
+    <div className="flex items-center gap-2 flex-wrap">
+      <Popover>
+        <PopoverTrigger asChild>
+          <Button variant="outline" size="sm" className={cn("gap-1.5 text-xs h-8", !dateFrom && "text-muted-foreground")}>
+            <CalendarIcon className="h-3 w-3" />
+            {dateFrom ? format(dateFrom, "dd/MM/yy") : "From"}
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent className="w-auto p-0" align="start">
+          <Calendar mode="single" selected={dateFrom} onSelect={onFromChange} initialFocus className={cn("p-3 pointer-events-auto")} />
+        </PopoverContent>
+      </Popover>
+      <Popover>
+        <PopoverTrigger asChild>
+          <Button variant="outline" size="sm" className={cn("gap-1.5 text-xs h-8", !dateTo && "text-muted-foreground")}>
+            <CalendarIcon className="h-3 w-3" />
+            {dateTo ? format(dateTo, "dd/MM/yy") : "To"}
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent className="w-auto p-0" align="start">
+          <Calendar mode="single" selected={dateTo} onSelect={onToChange} initialFocus className={cn("p-3 pointer-events-auto")} />
+        </PopoverContent>
+      </Popover>
+      {hasFilter && (
+        <Button variant="ghost" size="sm" onClick={onClear} className="gap-1 text-xs text-muted-foreground h-8 px-2">
+          <X className="h-3 w-3" />
+        </Button>
+      )}
+    </div>
+  );
+}
+
+function filterByDate(sales: Sale[], dateFrom?: Date, dateTo?: Date) {
+  if (!dateFrom && !dateTo) return sales;
+  return sales.filter((s) => {
+    const d = new Date(s.timestamp);
+    if (dateFrom && d < startOfDay(dateFrom)) return false;
+    if (dateTo && d > endOfDay(dateTo)) return false;
+    return true;
+  });
+}
 
 export default function DashboardPage() {
   const { sales, books } = useStore();
   const { signOut } = useAuth();
-  const [dateFrom, setDateFrom] = useState<Date | undefined>();
-  const [dateTo, setDateTo] = useState<Date | undefined>();
 
-  // Filter sales by date range
-  const filteredSales = useMemo(() => {
-    if (!dateFrom && !dateTo) return sales;
-    return sales.filter((s) => {
-      const d = new Date(s.timestamp);
-      if (dateFrom && d < startOfDay(dateFrom)) return false;
-      if (dateTo && d > endOfDay(dateTo)) return false;
-      return true;
-    });
-  }, [sales, dateFrom, dateTo]);
+  // Separate date filters for revenue and transactions
+  const [revFrom, setRevFrom] = useState<Date | undefined>();
+  const [revTo, setRevTo] = useState<Date | undefined>();
+  const [txFrom, setTxFrom] = useState<Date | undefined>();
+  const [txTo, setTxTo] = useState<Date | undefined>();
 
-  const revenueSales = filteredSales.filter((s) => REVENUE_TYPES.includes(s.transactionType));
-  const adjustments = filteredSales.filter((s) => ZERO_REVENUE_TYPES.includes(s.transactionType));
+  const revFilteredSales = useMemo(() => filterByDate(sales, revFrom, revTo), [sales, revFrom, revTo]);
+  const txFilteredSales = useMemo(() => filterByDate(sales, txFrom, txTo), [sales, txFrom, txTo]);
+
+  const revenueSales = revFilteredSales.filter((s) => REVENUE_TYPES.includes(s.transactionType));
+  const adjustments = revFilteredSales.filter((s) => ZERO_REVENUE_TYPES.includes(s.transactionType));
 
   const totalRevenue = revenueSales.reduce((sum, s) => sum + s.price, 0);
   const cashTotal = revenueSales.filter((s) => s.method === "cash").reduce((sum, s) => sum + s.price, 0);
@@ -53,19 +102,9 @@ export default function DashboardPage() {
     return "bg-card-pay/20 text-card-pay";
   };
 
-  const hasDateFilter = dateFrom || dateTo;
-  const clearDates = () => { setDateFrom(undefined); setDateTo(undefined); };
-
-  const dateLabel = () => {
-    if (dateFrom && dateTo) return `${format(dateFrom, "dd/MM/yy")} – ${format(dateTo, "dd/MM/yy")}`;
-    if (dateFrom) return `From ${format(dateFrom, "dd/MM/yy")}`;
-    if (dateTo) return `Until ${format(dateTo, "dd/MM/yy")}`;
-    return "All time";
-  };
-
   return (
     <div className="min-h-screen bg-background p-4 pb-24">
-      <header className="mb-4 flex items-center justify-between">
+      <header className="mb-6 flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-black tracking-tight">📊 Dashboard</h1>
           <p className="text-muted-foreground text-sm mt-1">Overview</p>
@@ -76,76 +115,54 @@ export default function DashboardPage() {
         </Button>
       </header>
 
-      {/* Date filter */}
-      <div className="flex items-center gap-2 mb-4 flex-wrap">
-        <Popover>
-          <PopoverTrigger asChild>
-            <Button variant="outline" size="sm" className={cn("gap-2 text-xs", !dateFrom && "text-muted-foreground")}>
-              <CalendarIcon className="h-3.5 w-3.5" />
-              {dateFrom ? format(dateFrom, "dd/MM/yy") : "From"}
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-auto p-0" align="start">
-            <Calendar mode="single" selected={dateFrom} onSelect={setDateFrom} initialFocus className={cn("p-3 pointer-events-auto")} />
-          </PopoverContent>
-        </Popover>
-        <Popover>
-          <PopoverTrigger asChild>
-            <Button variant="outline" size="sm" className={cn("gap-2 text-xs", !dateTo && "text-muted-foreground")}>
-              <CalendarIcon className="h-3.5 w-3.5" />
-              {dateTo ? format(dateTo, "dd/MM/yy") : "To"}
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-auto p-0" align="start">
-            <Calendar mode="single" selected={dateTo} onSelect={setDateTo} initialFocus className={cn("p-3 pointer-events-auto")} />
-          </PopoverContent>
-        </Popover>
-        {hasDateFilter && (
-          <Button variant="ghost" size="sm" onClick={clearDates} className="gap-1 text-xs text-muted-foreground">
-            <X className="h-3.5 w-3.5" /> Clear
-          </Button>
-        )}
-        <span className="text-xs text-muted-foreground ml-auto">{dateLabel()}</span>
-      </div>
-
-      {/* Total Revenue */}
-      <div className="rounded-xl bg-primary/10 border border-primary/20 p-5 flex items-center gap-4 mb-3">
-        <div className="h-12 w-12 rounded-full bg-primary flex items-center justify-center">
-          <DollarSign className="h-6 w-6 text-primary-foreground" />
-        </div>
-        <div>
-          <p className="text-sm font-medium text-muted-foreground">Total Revenue</p>
-          <p className="text-3xl font-black">CHF {totalRevenue.toFixed(2)}</p>
-          <p className="text-xs text-muted-foreground">{revenueSales.length} sales</p>
-        </div>
-      </div>
-
-      {/* Payment method breakdown */}
-      <div className="grid grid-cols-3 gap-3 mb-6">
-        <div className="rounded-xl bg-cash/10 border border-cash/20 p-4">
-          <Banknote className="h-6 w-6 text-cash mb-2" />
-          <p className="text-xs font-medium text-muted-foreground">Cash</p>
-          <p className="text-xl font-black">CHF {cashTotal.toFixed(2)}</p>
-        </div>
-        <div className="rounded-xl bg-card-pay/10 border border-card-pay/20 p-4">
-          <CreditCard className="h-6 w-6 text-card-pay mb-2" />
-          <p className="text-xs font-medium text-muted-foreground">Card</p>
-          <p className="text-xl font-black">CHF {cardTotal.toFixed(2)}</p>
-        </div>
-        <div className="rounded-xl bg-twint/10 border border-twint/20 p-4">
-          <Smartphone className="h-6 w-6 text-twint mb-2" />
-          <p className="text-xs font-medium text-muted-foreground">Twint</p>
-          <p className="text-xl font-black">CHF {twintTotal.toFixed(2)}</p>
-        </div>
-      </div>
-
-      {/* Revenue by category + export */}
+      {/* ── REVENUE SECTION ── */}
       <div className="mb-6">
         <div className="flex items-center justify-between mb-3">
-          <h2 className="text-lg font-bold">Revenue by Category</h2>
+          <h2 className="text-lg font-bold">Revenue</h2>
+          <DateRangePicker
+            dateFrom={revFrom} dateTo={revTo}
+            onFromChange={setRevFrom} onToChange={setRevTo}
+            onClear={() => { setRevFrom(undefined); setRevTo(undefined); }}
+          />
+        </div>
+
+        {/* Total */}
+        <div className="rounded-xl bg-primary/10 border border-primary/20 p-5 flex items-center gap-4 mb-3">
+          <div className="h-12 w-12 rounded-full bg-primary flex items-center justify-center">
+            <DollarSign className="h-6 w-6 text-primary-foreground" />
+          </div>
+          <div>
+            <p className="text-sm font-medium text-muted-foreground">Total Revenue</p>
+            <p className="text-3xl font-black">CHF {totalRevenue.toFixed(2)}</p>
+            <p className="text-xs text-muted-foreground">{revenueSales.length} sales</p>
+          </div>
+        </div>
+
+        {/* Payment breakdown */}
+        <div className="grid grid-cols-3 gap-3 mb-4">
+          <div className="rounded-xl bg-cash/10 border border-cash/20 p-4">
+            <Banknote className="h-6 w-6 text-cash mb-2" />
+            <p className="text-xs font-medium text-muted-foreground">Cash</p>
+            <p className="text-xl font-black">CHF {cashTotal.toFixed(2)}</p>
+          </div>
+          <div className="rounded-xl bg-card-pay/10 border border-card-pay/20 p-4">
+            <CreditCard className="h-6 w-6 text-card-pay mb-2" />
+            <p className="text-xs font-medium text-muted-foreground">Card</p>
+            <p className="text-xl font-black">CHF {cardTotal.toFixed(2)}</p>
+          </div>
+          <div className="rounded-xl bg-twint/10 border border-twint/20 p-4">
+            <Smartphone className="h-6 w-6 text-twint mb-2" />
+            <p className="text-xs font-medium text-muted-foreground">Twint</p>
+            <p className="text-xl font-black">CHF {twintTotal.toFixed(2)}</p>
+          </div>
+        </div>
+
+        {/* By category + export */}
+        <div className="flex items-center justify-between mb-2">
+          <p className="text-sm font-semibold text-muted-foreground">By Category</p>
           {revenueSales.length > 0 && (
-            <Button variant="secondary" size="sm" className="gap-2 text-xs" onClick={() => exportRevenueByCategoryCSV(revenueSales, dateFrom, dateTo)}>
-              <Download className="h-3.5 w-3.5" /> Export
+            <Button variant="secondary" size="sm" className="gap-2 text-xs h-7" onClick={() => exportRevenueByCategoryCSV(revenueSales, revFrom, revTo)}>
+              <Download className="h-3 w-3" /> Export
             </Button>
           )}
         </div>
@@ -159,7 +176,7 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* Stock adjustments */}
+      {/* Stock adjustments (uses revenue date filter) */}
       {adjustments.length > 0 && (
         <div className="mb-6">
           <h2 className="text-lg font-bold mb-3 flex items-center gap-2">
@@ -198,21 +215,28 @@ export default function DashboardPage() {
         </div>
       )}
 
-      {/* Transaction History */}
+      {/* ── TRANSACTIONS SECTION ── */}
       <div>
-        <div className="flex items-center justify-between mb-3">
-          <h2 className="text-lg font-bold">Transactions ({filteredSales.length})</h2>
-          {filteredSales.length > 0 && (
-            <Button variant="secondary" size="sm" className="gap-2 text-xs" onClick={() => exportSalesToCSV(filteredSales)}>
-              <Download className="h-3.5 w-3.5" /> Export CSV
+        <div className="flex items-center justify-between mb-2">
+          <h2 className="text-lg font-bold">Transactions ({txFilteredSales.length})</h2>
+          {txFilteredSales.length > 0 && (
+            <Button variant="secondary" size="sm" className="gap-2 text-xs h-7" onClick={() => exportSalesToCSV(txFilteredSales)}>
+              <Download className="h-3 w-3" /> CSV
             </Button>
           )}
         </div>
-        {filteredSales.length === 0 ? (
-          <p className="text-muted-foreground text-center py-8">No transactions {hasDateFilter ? "for selected dates" : "yet"}</p>
+        <div className="mb-3">
+          <DateRangePicker
+            dateFrom={txFrom} dateTo={txTo}
+            onFromChange={setTxFrom} onToChange={setTxTo}
+            onClear={() => { setTxFrom(undefined); setTxTo(undefined); }}
+          />
+        </div>
+        {txFilteredSales.length === 0 ? (
+          <p className="text-muted-foreground text-center py-8">No transactions {(txFrom || txTo) ? "for selected dates" : "yet"}</p>
         ) : (
           <div className="space-y-2">
-            {filteredSales.slice(0, 50).map((s) => (
+            {txFilteredSales.slice(0, 50).map((s) => (
               <div key={s.id} className="flex items-center justify-between rounded-lg bg-secondary p-3">
                 <div className="min-w-0 flex-1">
                   <p className="font-semibold truncate text-sm">{s.title}</p>
