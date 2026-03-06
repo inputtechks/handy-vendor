@@ -40,18 +40,24 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-3 gap-3">
           <div className="rounded-xl bg-cash/10 border border-cash/20 p-4">
             <Banknote className="h-6 w-6 text-cash mb-2" />
             <p className="text-xs font-medium text-muted-foreground">Cash</p>
-            <p className="text-2xl font-black">CHF {cashTotal.toFixed(2)}</p>
+            <p className="text-xl font-black">CHF {cashTotal.toFixed(2)}</p>
             <p className="text-xs text-muted-foreground">{sales.filter((s) => s.method === "cash").length} sales</p>
           </div>
           <div className="rounded-xl bg-card-pay/10 border border-card-pay/20 p-4">
             <CreditCard className="h-6 w-6 text-card-pay mb-2" />
             <p className="text-xs font-medium text-muted-foreground">Card</p>
-            <p className="text-2xl font-black">CHF {cardTotal.toFixed(2)}</p>
+            <p className="text-xl font-black">CHF {cardTotal.toFixed(2)}</p>
             <p className="text-xs text-muted-foreground">{sales.filter((s) => s.method === "card").length} sales</p>
+          </div>
+          <div className="rounded-xl bg-twint/10 border border-twint/20 p-4">
+            <Smartphone className="h-6 w-6 text-twint mb-2" />
+            <p className="text-xs font-medium text-muted-foreground">Twint</p>
+            <p className="text-xl font-black">CHF {twintTotal.toFixed(2)}</p>
+            <p className="text-xs text-muted-foreground">{sales.filter((s) => s.method === "twint").length} sales</p>
           </div>
         </div>
       </div>
