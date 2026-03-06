@@ -12,6 +12,7 @@ export default function DashboardPage() {
   const totalRevenue = sales.reduce((sum, s) => sum + s.price, 0);
   const cashTotal = sales.filter((s) => s.method === "cash").reduce((sum, s) => sum + s.price, 0);
   const cardTotal = sales.filter((s) => s.method === "card").reduce((sum, s) => sum + s.price, 0);
+  const twintTotal = sales.filter((s) => s.method === "twint").reduce((sum, s) => sum + s.price, 0);
   const lowStock = books.filter((b) => b.quantity <= 1);
 
   return (
