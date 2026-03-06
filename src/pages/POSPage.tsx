@@ -71,7 +71,7 @@ export default function POSPage() {
     if (isNaN(received) || received < totalPrice) return;
 
     setChangeAmount(received - totalPrice);
-    const sale = await sellBook(currentBook.isbn, "cash", sellQty, discount);
+    const sale = await sellBook(currentBook.isbn, "cash", sellQty, discount, "retail");
     if (!sale) return;
     setStage("done");
     setTimeout(() => reset(), 3000);
