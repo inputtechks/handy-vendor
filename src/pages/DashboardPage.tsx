@@ -1,7 +1,7 @@
 import { useStore } from "@/context/StoreContext";
 import { useAuth } from "@/context/AuthContext";
 import { format } from "date-fns";
-import { DollarSign, Banknote, CreditCard, AlertTriangle, Download, LogOut } from "lucide-react";
+import { DollarSign, Banknote, CreditCard, Smartphone, AlertTriangle, Download, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { exportSalesToCSV } from "@/lib/exportSales";
 
