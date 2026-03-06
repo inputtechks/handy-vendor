@@ -1,0 +1,1 @@
+ALTER TABLE public.sales ADD COLUMN discount numeric NOT NULL DEFAULT 0;

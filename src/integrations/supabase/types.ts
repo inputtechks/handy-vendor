@@ -52,6 +52,7 @@ export type Database = {
       }
       sales: {
         Row: {
+          discount: number
           id: string
           isbn: string
           method: string
@@ -61,6 +62,7 @@ export type Database = {
           vendor_id: string
         }
         Insert: {
+          discount?: number
           id?: string
           isbn: string
           method: string
@@ -70,6 +72,7 @@ export type Database = {
           vendor_id: string
         }
         Update: {
+          discount?: number
           id?: string
           isbn?: string
           method?: string

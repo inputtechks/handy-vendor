@@ -11,7 +11,7 @@ interface StoreContextType {
   updateBook: (isbn: string, updates: Partial<Book>) => Promise<void>;
   removeBook: (isbn: string) => Promise<void>;
   getBook: (isbn: string) => Book | undefined;
-  sellBook: (isbn: string, method: "cash" | "card") => Promise<Sale | null>;
+  sellBook: (isbn: string, method: "cash" | "card" | "twint", qty: number, discount: number) => Promise<Sale | null>;
   searchBooks: (query: string) => Book[];
 }
 
