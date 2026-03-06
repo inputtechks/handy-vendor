@@ -56,9 +56,11 @@ export type Database = {
           id: string
           isbn: string
           method: string
+          note: string
           price: number
           sold_at: string
           title: string
+          transaction_type: string
           vendor_id: string
         }
         Insert: {
@@ -66,9 +68,11 @@ export type Database = {
           id?: string
           isbn: string
           method: string
+          note?: string
           price: number
           sold_at?: string
           title: string
+          transaction_type?: string
           vendor_id: string
         }
         Update: {
@@ -76,9 +80,11 @@ export type Database = {
           id?: string
           isbn?: string
           method?: string
+          note?: string
           price?: number
           sold_at?: string
           title?: string
+          transaction_type?: string
           vendor_id?: string
         }
         Relationships: []

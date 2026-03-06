@@ -8,6 +8,7 @@ import { StoreProvider } from "@/context/StoreContext";
 import { BottomNav } from "@/components/BottomNav";
 import InventoryPage from "@/pages/InventoryPage";
 import POSPage from "@/pages/POSPage";
+import MovementsPage from "@/pages/MovementsPage";
 import DashboardPage from "@/pages/DashboardPage";
 import AuthPage from "@/pages/AuthPage";
 import NotFound from "./pages/NotFound";
@@ -33,6 +34,7 @@ function AppRoutes() {
       <Routes>
         <Route path="/" element={<InventoryPage />} />
         <Route path="/sell" element={<POSPage />} />
+        <Route path="/movements" element={<MovementsPage />} />
         <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="*" element={<NotFound />} />
       </Routes>

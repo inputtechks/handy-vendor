@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
-import type { Book, Sale } from "@/types/book";
+import type { Book, Sale, TransactionType, PaymentMethod } from "@/types/book";
 
 interface StoreContextType {
   books: Book[];
@@ -11,7 +11,8 @@ interface StoreContextType {
   updateBook: (isbn: string, updates: Partial<Book>) => Promise<void>;
   removeBook: (isbn: string) => Promise<void>;
   getBook: (isbn: string) => Book | undefined;
-  sellBook: (isbn: string, method: "cash" | "card" | "twint", qty: number, discount: number) => Promise<Sale | null>;
+  sellBook: (isbn: string, method: PaymentMethod, qty: number, discount: number, transactionType?: TransactionType, note?: string) => Promise<Sale | null>;
+  recordMovement: (isbn: string, qty: number, transactionType: TransactionType, note?: string) => Promise<Sale | null>;
   searchBooks: (query: string) => Book[];
 }
 
@@ -23,7 +24,6 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   const [sales, setSales] = useState<Sale[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Fetch books and sales when user changes
   useEffect(() => {
     if (!user) {
       setBooks([]);
@@ -56,9 +56,11 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
           isbn: s.isbn,
           title: s.title,
           price: Number(s.price),
-          method: s.method as "cash" | "card" | "twint",
-          discount: Number((s as any).discount ?? 0),
+          method: s.method as PaymentMethod,
+          discount: Number(s.discount ?? 0),
           timestamp: new Date(s.sold_at).getTime(),
+          transactionType: ((s as any).transaction_type ?? "retail") as TransactionType,
+          note: (s as any).note ?? "",
         })));
       }
       setLoading(false);
@@ -69,7 +71,6 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
 
   const addBook = useCallback(async (book: Book) => {
     if (!user) return;
-    // Upsert: if ISBN exists for this vendor, add quantity and update price
     const existing = books.find((b) => b.isbn === book.isbn);
     if (existing) {
       const { error } = await supabase
@@ -127,12 +128,11 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   );
 
   const sellBook = useCallback(
-    async (isbn: string, method: "cash" | "card" | "twint", qty: number, discount: number): Promise<Sale | null> => {
+    async (isbn: string, method: PaymentMethod, qty: number, discount: number, transactionType: TransactionType = "retail", note: string = ""): Promise<Sale | null> => {
       if (!user) return null;
       const book = books.find((b) => b.isbn === isbn);
       if (!book || book.quantity < qty) return null;
 
-      // Decrement stock
       const { error: updateError } = await supabase
         .from("books")
         .update({ quantity: book.quantity - qty })
@@ -140,17 +140,19 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
         .eq("isbn", isbn);
       if (updateError) return null;
 
-      const finalPrice = book.salePrice - discount;
+      const finalPrice = Math.max(0, (book.salePrice - discount) * qty);
 
-      // Record sale
       const { data, error: insertError } = await supabase
         .from("sales")
         .insert({
           vendor_id: user.id,
           isbn,
           title: book.title,
-          price: finalPrice * qty,
+          price: finalPrice,
           method,
+          discount,
+          transaction_type: transactionType,
+          note,
         })
         .select()
         .single();
@@ -161,14 +163,75 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
         id: data.id,
         isbn,
         title: book.title,
-        price: finalPrice * qty,
+        price: finalPrice,
         method,
         discount,
         timestamp: new Date(data.sold_at).getTime(),
+        transactionType,
+        note,
       };
 
       setBooks((prev) =>
         prev.map((b) => (b.isbn === isbn ? { ...b, quantity: b.quantity - qty } : b))
+      );
+      setSales((prev) => [sale, ...prev]);
+      return sale;
+    },
+    [user, books]
+  );
+
+  /** Record a stock movement (Pilon, SP, Dépôt deposit/return) with $0 revenue */
+  const recordMovement = useCallback(
+    async (isbn: string, qty: number, transactionType: TransactionType, note: string = ""): Promise<Sale | null> => {
+      if (!user) return null;
+      const book = books.find((b) => b.isbn === isbn);
+      if (!book) return null;
+
+      // depot_return adds stock back; everything else subtracts
+      const newQty = transactionType === "depot_return"
+        ? book.quantity + qty
+        : book.quantity - qty;
+
+      if (newQty < 0) return null;
+
+      const { error: updateError } = await supabase
+        .from("books")
+        .update({ quantity: newQty })
+        .eq("vendor_id", user.id)
+        .eq("isbn", isbn);
+      if (updateError) return null;
+
+      const { data, error: insertError } = await supabase
+        .from("sales")
+        .insert({
+          vendor_id: user.id,
+          isbn,
+          title: book.title,
+          price: 0,
+          method: "none",
+          discount: 0,
+          transaction_type: transactionType,
+          note,
+        })
+        .select()
+        .single();
+
+      if (insertError || !data) return null;
+
+      const sale: Sale = {
+        id: data.id,
+        isbn,
+        title: book.title,
+        price: 0,
+        method: "none",
+        discount: 0,
+        timestamp: new Date(data.sold_at).getTime(),
+        transactionType,
+        note,
+      };
+
+      setBooks((prev) =>
+        prev.map((b) => (b.isbn === isbn ? { ...b, quantity: newQty } : b))
       );
       setSales((prev) => [sale, ...prev]);
       return sale;
@@ -190,7 +253,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   );
 
   return (
-    <StoreContext.Provider value={{ books, sales, loading, addBook, updateBook, removeBook, getBook, sellBook, searchBooks }}>
+    <StoreContext.Provider value={{ books, sales, loading, addBook, updateBook, removeBook, getBook, sellBook, recordMovement, searchBooks }}>
       {children}
     </StoreContext.Provider>
   );
