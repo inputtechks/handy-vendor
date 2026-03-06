@@ -40,6 +40,8 @@
     --cash-foreground: 0 0% 100%;
     --card-pay: 215 80% 55%;
     --card-pay-foreground: 0 0% 100%;
+    --twint: 200 10% 20%;
+    --twint-foreground: 0 0% 100%;
     --warning: 45 95% 50%;
     --warning-foreground: 0 0% 10%;
 
