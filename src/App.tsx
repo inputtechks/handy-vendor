@@ -34,6 +34,7 @@ function AppRoutes() {
       <Routes>
         <Route path="/" element={<InventoryPage />} />
         <Route path="/sell" element={<POSPage />} />
+        <Route path="/movements" element={<MovementsPage />} />
         <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
