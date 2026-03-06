@@ -56,7 +56,8 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
           isbn: s.isbn,
           title: s.title,
           price: Number(s.price),
-          method: s.method as "cash" | "card",
+          method: s.method as "cash" | "card" | "twint",
+          discount: Number((s as any).discount ?? 0),
           timestamp: new Date(s.sold_at).getTime(),
         })));
       }
