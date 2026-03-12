@@ -5,6 +5,7 @@ import { BookInfoCard } from "@/components/BookInfoCard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Search, Plus, ScanBarcode, Check, Trash2 } from "lucide-react";
+import { useCameraStream } from "@/hooks/useCameraStream";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
@@ -15,6 +16,7 @@ type Stage = "idle" | "scanning" | "form" | "added";
 
 export default function InventoryPage() {
   const { addBook, removeBook, books, searchBooks } = useStore();
+  const { stream, requestStream, stopStream } = useCameraStream();
   const [stage, setStage] = useState<Stage>("idle");
   const [isbn, setIsbn] = useState("");
   const [editTitle, setEditTitle] = useState("");
@@ -63,11 +65,17 @@ export default function InventoryPage() {
 
   const reset = () => {
     setStage("idle");
+    stopStream();
     setIsbn("");
     setEditTitle("");
     setEditAuthor("");
     setPrice("");
     setQty("1");
+  };
+
+  const handleStartScan = async () => {
+    const ok = await requestStream();
+    if (ok) setStage("scanning");
   };
 
   return (
@@ -110,7 +118,7 @@ export default function InventoryPage() {
             className="space-y-3"
           >
             <Button
-              onClick={() => setStage("scanning")}
+              onClick={handleStartScan}
               className="w-full h-16 text-lg font-bold gap-3"
             >
               <ScanBarcode className="h-6 w-6" />
@@ -132,7 +140,7 @@ export default function InventoryPage() {
 
         {stage === "scanning" && (
           <motion.div key="scanning" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-3">
-            <BarcodeScanner onScan={handleScan} active />
+            <BarcodeScanner onScan={handleScan} active stream={stream} />
             <Button variant="secondary" onClick={reset} className="w-full h-12">
               Cancel
             </Button>

@@ -5,6 +5,7 @@ import { BookInfoCard } from "@/components/BookInfoCard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScanBarcode, Search, Check, XCircle, Minus, Plus, ArrowRightLeft } from "lucide-react";
+import { useCameraStream } from "@/hooks/useCameraStream";
 import { motion, AnimatePresence } from "framer-motion";
 import type { Book, TransactionType } from "@/types/book";
 import { TRANSACTION_LABELS } from "@/types/book";
@@ -26,6 +27,7 @@ const PAID_MOVEMENTS: TransactionType[] = ["depot_sold", "auteur", "internet"];
 
 export default function MovementsPage() {
   const { getBook, sellBook, recordMovement, searchBooks } = useStore();
+  const { stream, requestStream, stopStream } = useCameraStream();
   const [stage, setStage] = useState<Stage>("idle");
   const [currentBook, setCurrentBook] = useState<Book | null>(null);
   const [selectedType, setSelectedType] = useState<TransactionType | null>(null);
@@ -93,6 +95,7 @@ export default function MovementsPage() {
 
   const reset = () => {
     setStage("idle");
+    stopStream();
     setCurrentBook(null);
     setSelectedType(null);
     setErrorMsg("");
@@ -100,6 +103,11 @@ export default function MovementsPage() {
     setNote("");
     setSearchQuery("");
     setSearchResults([]);
+  };
+
+  const handleStartScan = async () => {
+    const ok = await requestStream();
+    if (ok) setStage("scanning");
   };
 
   const maxQty = currentBook
@@ -142,7 +150,7 @@ export default function MovementsPage() {
       <AnimatePresence mode="wait">
         {stage === "idle" && (
           <motion.div key="idle" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex-1 flex flex-col justify-center">
-            <Button onClick={() => setStage("scanning")} variant="secondary" className="w-full h-32 text-2xl font-black gap-4 rounded-xl">
+            <Button onClick={handleStartScan} variant="secondary" className="w-full h-32 text-2xl font-black gap-4 rounded-xl">
               <ScanBarcode className="h-10 w-10" />
               SCAN FOR MOVEMENT
             </Button>
@@ -151,7 +159,7 @@ export default function MovementsPage() {
 
         {stage === "scanning" && (
           <motion.div key="scanning" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-4 flex-1">
-            <BarcodeScanner onScan={handleScan} active />
+            <BarcodeScanner onScan={handleScan} active stream={stream} />
             <Button variant="secondary" onClick={reset} className="w-full h-14 text-lg">Cancel</Button>
           </motion.div>
         )}

@@ -7,11 +7,13 @@ import { Input } from "@/components/ui/input";
 import { ScanBarcode, Search, Banknote, CreditCard, Check, XCircle, Minus, Plus, Smartphone } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import type { Book } from "@/types/book";
+import { useCameraStream } from "@/hooks/useCameraStream";
 
 type Stage = "idle" | "scanning" | "confirm" | "cash-change" | "done" | "error";
 
 export default function POSPage() {
   const { getBook, sellBook, searchBooks } = useStore();
+  const { stream, requestStream, stopStream } = useCameraStream();
   const [stage, setStage] = useState<Stage>("idle");
   const [currentBook, setCurrentBook] = useState<Book | null>(null);
   const [lastMethod, setLastMethod] = useState<"cash" | "card" | "twint" | null>(null);
@@ -94,6 +96,7 @@ export default function POSPage() {
 
   const reset = () => {
     setStage("idle");
+    stopStream();
     setCurrentBook(null);
     setErrorMsg("");
     setSellQty(1);
@@ -102,6 +105,11 @@ export default function POSPage() {
     setAmountReceived("");
     setChangeAmount(null);
     setLastMethod(null);
+  };
+
+  const handleStartScan = async () => {
+    const ok = await requestStream();
+    if (ok) setStage("scanning");
   };
 
   const handleDiscountChange = (val: string) => {
@@ -143,7 +151,7 @@ export default function POSPage() {
       <AnimatePresence mode="wait">
         {stage === "idle" && (
           <motion.div key="idle" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex-1 flex flex-col justify-center">
-            <Button onClick={() => setStage("scanning")} className="w-full h-32 text-2xl font-black gap-4 rounded-xl">
+            <Button onClick={handleStartScan} className="w-full h-32 text-2xl font-black gap-4 rounded-xl">
               <ScanBarcode className="h-10 w-10" />
               SCAN TO SELL
             </Button>
@@ -152,7 +160,7 @@ export default function POSPage() {
 
         {stage === "scanning" && (
           <motion.div key="scanning" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-4 flex-1">
-            <BarcodeScanner onScan={handleScan} active />
+            <BarcodeScanner onScan={handleScan} active stream={stream} />
             <Button variant="secondary" onClick={reset} className="w-full h-14 text-lg">
               Cancel
             </Button>
