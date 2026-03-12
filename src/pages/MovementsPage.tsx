@@ -95,6 +95,7 @@ export default function MovementsPage() {
 
   const reset = () => {
     setStage("idle");
+    stopStream();
     setCurrentBook(null);
     setSelectedType(null);
     setErrorMsg("");
@@ -102,6 +103,11 @@ export default function MovementsPage() {
     setNote("");
     setSearchQuery("");
     setSearchResults([]);
+  };
+
+  const handleStartScan = async () => {
+    const ok = await requestStream();
+    if (ok) setStage("scanning");
   };
 
   const maxQty = currentBook
