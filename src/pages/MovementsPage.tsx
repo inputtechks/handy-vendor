@@ -106,7 +106,7 @@ export default function MovementsPage() {
   };
 
   const handleStartScan = async () => {
-    const ok = await requestStream();
+    const ok = await requestCamera();
     if (ok) setStage("scanning");
   };
 
