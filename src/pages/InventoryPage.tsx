@@ -16,6 +16,7 @@ type Stage = "idle" | "scanning" | "form" | "added";
 
 export default function InventoryPage() {
   const { addBook, removeBook, books, searchBooks } = useStore();
+  const { stream, requestStream, stopStream } = useCameraStream();
   const [stage, setStage] = useState<Stage>("idle");
   const [isbn, setIsbn] = useState("");
   const [editTitle, setEditTitle] = useState("");
