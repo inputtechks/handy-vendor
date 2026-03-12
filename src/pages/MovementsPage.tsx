@@ -27,7 +27,7 @@ const PAID_MOVEMENTS: TransactionType[] = ["depot_sold", "auteur", "internet"];
 
 export default function MovementsPage() {
   const { getBook, sellBook, recordMovement, searchBooks } = useStore();
-  const { stream, requestStream, stopStream } = useCameraStream();
+  const { cameraId, requestCamera, reset: resetCamera } = useCameraStream();
   const [stage, setStage] = useState<Stage>("idle");
   const [currentBook, setCurrentBook] = useState<Book | null>(null);
   const [selectedType, setSelectedType] = useState<TransactionType | null>(null);
@@ -95,7 +95,7 @@ export default function MovementsPage() {
 
   const reset = () => {
     setStage("idle");
-    stopStream();
+    resetCamera();
     setCurrentBook(null);
     setSelectedType(null);
     setErrorMsg("");
@@ -106,7 +106,7 @@ export default function MovementsPage() {
   };
 
   const handleStartScan = async () => {
-    const ok = await requestStream();
+    const ok = await requestCamera();
     if (ok) setStage("scanning");
   };
 
@@ -159,7 +159,7 @@ export default function MovementsPage() {
 
         {stage === "scanning" && (
           <motion.div key="scanning" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-4 flex-1">
-            <BarcodeScanner onScan={handleScan} active stream={stream} />
+            <BarcodeScanner onScan={handleScan} active cameraId={cameraId} />
             <Button variant="secondary" onClick={reset} className="w-full h-14 text-lg">Cancel</Button>
           </motion.div>
         )}

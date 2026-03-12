@@ -13,7 +13,7 @@ type Stage = "idle" | "scanning" | "confirm" | "cash-change" | "done" | "error";
 
 export default function POSPage() {
   const { getBook, sellBook, searchBooks } = useStore();
-  const { stream, requestStream, stopStream } = useCameraStream();
+  const { cameraId, requestCamera, reset: resetCamera } = useCameraStream();
   const [stage, setStage] = useState<Stage>("idle");
   const [currentBook, setCurrentBook] = useState<Book | null>(null);
   const [lastMethod, setLastMethod] = useState<"cash" | "card" | "twint" | null>(null);
@@ -96,7 +96,7 @@ export default function POSPage() {
 
   const reset = () => {
     setStage("idle");
-    stopStream();
+    resetCamera();
     setCurrentBook(null);
     setErrorMsg("");
     setSellQty(1);
@@ -108,7 +108,7 @@ export default function POSPage() {
   };
 
   const handleStartScan = async () => {
-    const ok = await requestStream();
+    const ok = await requestCamera();
     if (ok) setStage("scanning");
   };
 
@@ -160,7 +160,7 @@ export default function POSPage() {
 
         {stage === "scanning" && (
           <motion.div key="scanning" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-4 flex-1">
-            <BarcodeScanner onScan={handleScan} active stream={stream} />
+            <BarcodeScanner onScan={handleScan} active cameraId={cameraId} />
             <Button variant="secondary" onClick={reset} className="w-full h-14 text-lg">
               Cancel
             </Button>

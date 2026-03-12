@@ -1,22 +1,27 @@
 import { useState, useCallback, useRef } from "react";
 
 /**
- * Hook to acquire camera stream directly from a user gesture (iOS-safe).
- * Call `requestStream` in an onClick handler, then pass `stream` to BarcodeScanner.
+ * Hook to acquire camera permission directly from a user gesture (iOS-safe).
+ * Requests getUserMedia, extracts cameraId, then immediately releases the stream
+ * so html5-qrcode can open the camera cleanly without double-session conflicts.
  */
 export function useCameraStream() {
-  const [stream, setStream] = useState<MediaStream | null>(null);
+  const [cameraId, setCameraId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const streamRef = useRef<MediaStream | null>(null);
 
-  const requestStream = useCallback(async (): Promise<boolean> => {
+  const requestCamera = useCallback(async (): Promise<boolean> => {
     try {
       setError(null);
+      // Must be called directly from user gesture for iOS Safari
       const mediaStream = await navigator.mediaDevices.getUserMedia({
         video: { facingMode: "environment" },
       });
-      streamRef.current = mediaStream;
-      setStream(mediaStream);
+      // Extract cameraId from the granted track
+      const track = mediaStream.getVideoTracks()[0];
+      const deviceId = track?.getSettings()?.deviceId || null;
+      // Release immediately — html5-qrcode will open its own session
+      mediaStream.getTracks().forEach((t) => t.stop());
+      setCameraId(deviceId);
       return true;
     } catch (err) {
       console.error("Camera access error:", err);
@@ -25,14 +30,10 @@ export function useCameraStream() {
     }
   }, []);
 
-  const stopStream = useCallback(() => {
-    if (streamRef.current) {
-      streamRef.current.getTracks().forEach((t) => t.stop());
-      streamRef.current = null;
-    }
-    setStream(null);
+  const reset = useCallback(() => {
+    setCameraId(null);
     setError(null);
   }, []);
 
-  return { stream, error, requestStream, stopStream };
+  return { cameraId, error, requestCamera, reset };
 }

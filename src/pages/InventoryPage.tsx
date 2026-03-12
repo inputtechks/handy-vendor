@@ -16,7 +16,7 @@ type Stage = "idle" | "scanning" | "form" | "added";
 
 export default function InventoryPage() {
   const { addBook, removeBook, books, searchBooks } = useStore();
-  const { stream, requestStream, stopStream } = useCameraStream();
+  const { cameraId, requestCamera, reset: resetCamera } = useCameraStream();
   const [stage, setStage] = useState<Stage>("idle");
   const [isbn, setIsbn] = useState("");
   const [editTitle, setEditTitle] = useState("");
@@ -65,7 +65,7 @@ export default function InventoryPage() {
 
   const reset = () => {
     setStage("idle");
-    stopStream();
+    resetCamera();
     setIsbn("");
     setEditTitle("");
     setEditAuthor("");
@@ -74,7 +74,7 @@ export default function InventoryPage() {
   };
 
   const handleStartScan = async () => {
-    const ok = await requestStream();
+    const ok = await requestCamera();
     if (ok) setStage("scanning");
   };
 
@@ -140,7 +140,7 @@ export default function InventoryPage() {
 
         {stage === "scanning" && (
           <motion.div key="scanning" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-3">
-            <BarcodeScanner onScan={handleScan} active stream={stream} />
+            <BarcodeScanner onScan={handleScan} active cameraId={cameraId} />
             <Button variant="secondary" onClick={reset} className="w-full h-12">
               Cancel
             </Button>
