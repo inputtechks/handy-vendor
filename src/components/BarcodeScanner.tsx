@@ -6,14 +6,15 @@ import { RefreshCw } from "lucide-react";
 interface BarcodeScannerProps {
   onScan: (code: string) => void;
   active: boolean;
-  stream?: MediaStream | null;
+  /** Preferred cameraId obtained from user gesture (iOS-safe). */
+  cameraId?: string | null;
 }
 
-export function BarcodeScanner({ onScan, active, stream }: BarcodeScannerProps) {
+export function BarcodeScanner({ onScan, active, cameraId }: BarcodeScannerProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const scannerRef = useRef<Html5Qrcode | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [retrying, setRetrying] = useState(false);
+  const [retryKey, setRetryKey] = useState(0);
 
   useEffect(() => {
     if (!active || !containerRef.current) return;
@@ -36,45 +37,43 @@ export function BarcodeScanner({ onScan, active, stream }: BarcodeScannerProps) 
       onScan(decodedText);
     };
 
+    // Large responsive scan area — fills most of the viewfinder for easy positioning
     const qrboxFunction = (viewfinderWidth: number, viewfinderHeight: number) => {
-      const w = Math.min(Math.floor(viewfinderWidth * 0.85), 320);
-      const h = Math.min(Math.floor(viewfinderHeight * 0.6), 180);
-      return { width: Math.max(w, 150), height: Math.max(h, 100) };
+      const w = Math.min(Math.floor(viewfinderWidth * 0.9), 400);
+      const h = Math.min(Math.floor(viewfinderHeight * 0.7), 250);
+      return { width: Math.max(w, 200), height: Math.max(h, 120) };
+    };
+
+    const config = {
+      fps: 10,
+      qrbox: qrboxFunction,
+      disableFlip: false,
+      // No fixed aspectRatio — let the camera use its native resolution (better for portrait iPhones)
     };
 
     const startScanner = async () => {
       try {
-        if (stream) {
-          // Use the pre-acquired stream (iOS-safe: obtained from user gesture)
-          const videoTrack = stream.getVideoTracks()[0];
-          if (!videoTrack) throw new Error("No video track in stream");
-          const settings = videoTrack.getSettings();
-          const cameraId = settings.deviceId;
-
-          if (cameraId) {
+        // Priority 1: Use cameraId from warm-up (most reliable on iOS)
+        if (cameraId) {
+          await scanner.start(cameraId, config, onSuccess, () => {});
+        } else {
+          // Priority 2: facingMode with exact (works on most devices)
+          try {
             await scanner.start(
-              cameraId,
-              { fps: 15, qrbox: qrboxFunction, disableFlip: false, aspectRatio: 1.777 },
+              { facingMode: { exact: "environment" } },
+              config,
               onSuccess,
               () => {}
             );
-          } else {
-            // Fallback: use facingMode
+          } catch {
+            // Priority 3: loose facingMode (fallback for front-only cameras)
             await scanner.start(
               { facingMode: "environment" },
-              { fps: 15, qrbox: qrboxFunction, disableFlip: false, aspectRatio: 1.777 },
+              config,
               onSuccess,
               () => {}
             );
           }
-        } else {
-          // No stream provided, try directly (works on Android/desktop)
-          await scanner.start(
-            { facingMode: "environment" },
-            { fps: 15, qrbox: qrboxFunction, disableFlip: false, aspectRatio: 1.777 },
-            onSuccess,
-            () => {}
-          );
         }
 
         if (cancelled) {
@@ -85,7 +84,7 @@ export function BarcodeScanner({ onScan, active, stream }: BarcodeScannerProps) 
       } catch (err) {
         if (!cancelled) {
           console.error("Scanner error:", err);
-          setError("Camera access denied or unavailable. Please allow camera access and try again.");
+          setError("Camera unavailable. Please allow camera access and try again.");
         }
       }
     };
@@ -98,51 +97,52 @@ export function BarcodeScanner({ onScan, active, stream }: BarcodeScannerProps) 
         running = false;
         scanner.stop().catch(() => {});
       }
+      // Full cleanup to avoid stale DOM state
+      try {
+        scanner.clear();
+      } catch {}
+      scannerRef.current = null;
     };
-  }, [active, stream, onScan]);
+  }, [active, cameraId, onScan, retryKey]);
 
   const handleRetry = async () => {
     setError(null);
-    setRetrying(true);
     try {
-      // Request camera directly from this click (user gesture)
+      // Request camera from this click (user gesture for iOS)
       const newStream = await navigator.mediaDevices.getUserMedia({
         video: { facingMode: "environment" },
       });
-      // Stop the stream immediately — the scanner will request its own
       newStream.getTracks().forEach((t) => t.stop());
-      setRetrying(false);
-      // Force remount by toggling error
-      setError(null);
+      // Bump retryKey to force a full scanner remount
+      setRetryKey((k) => k + 1);
     } catch {
-      setRetrying(false);
-      setError("Camera access denied. Please check your browser settings and allow camera access.");
+      setError("Camera access denied. Please check your browser settings.");
     }
   };
 
   if (!active) return null;
 
   return (
-    <div className="w-full">
+    <div className="w-full space-y-2">
       {error ? (
         <div className="rounded-lg bg-destructive/20 p-4 text-center space-y-3">
           <p className="text-destructive text-sm font-medium">{error}</p>
-          <Button
-            variant="secondary"
-            size="sm"
-            onClick={handleRetry}
-            disabled={retrying}
-            className="gap-2"
-          >
-            <RefreshCw className={`h-4 w-4 ${retrying ? "animate-spin" : ""}`} />
-            {retrying ? "Retrying..." : "Try Again"}
+          <Button variant="secondary" size="sm" onClick={handleRetry} className="gap-2">
+            <RefreshCw className="h-4 w-4" />
+            Try Again
           </Button>
         </div>
       ) : (
-        <div
-          ref={containerRef}
-          className="mx-auto w-full max-w-sm overflow-hidden rounded-lg border-2 border-primary/30"
-        />
+        <>
+          <div
+            ref={containerRef}
+            className="mx-auto w-full max-w-md overflow-hidden rounded-lg border-2 border-primary/30"
+            style={{ minHeight: "280px" }}
+          />
+          <p className="text-center text-xs text-muted-foreground">
+            Hold the barcode 15–25 cm from the camera
+          </p>
+        </>
       )}
     </div>
   );
