@@ -95,7 +95,7 @@ export default function MovementsPage() {
 
   const reset = () => {
     setStage("idle");
-    stopStream();
+    resetCamera();
     setCurrentBook(null);
     setSelectedType(null);
     setErrorMsg("");
