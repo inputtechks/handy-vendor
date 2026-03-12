@@ -96,7 +96,7 @@ export default function POSPage() {
 
   const reset = () => {
     setStage("idle");
-    stopStream();
+    resetCamera();
     setCurrentBook(null);
     setErrorMsg("");
     setSellQty(1);
