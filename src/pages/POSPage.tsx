@@ -160,7 +160,7 @@ export default function POSPage() {
 
         {stage === "scanning" && (
           <motion.div key="scanning" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-4 flex-1">
-            <BarcodeScanner onScan={handleScan} active />
+            <BarcodeScanner onScan={handleScan} active stream={stream} />
             <Button variant="secondary" onClick={reset} className="w-full h-14 text-lg">
               Cancel
             </Button>
