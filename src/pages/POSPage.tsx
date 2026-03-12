@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { ScanBarcode, Search, Banknote, CreditCard, Check, XCircle, Minus, Plus, Smartphone } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import type { Book } from "@/types/book";
+import { useCameraStream } from "@/hooks/useCameraStream";
 
 type Stage = "idle" | "scanning" | "confirm" | "cash-change" | "done" | "error";
 
