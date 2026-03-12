@@ -118,7 +118,7 @@ export default function InventoryPage() {
             className="space-y-3"
           >
             <Button
-              onClick={() => setStage("scanning")}
+              onClick={handleStartScan}
               className="w-full h-16 text-lg font-bold gap-3"
             >
               <ScanBarcode className="h-6 w-6" />
