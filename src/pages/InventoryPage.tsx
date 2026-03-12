@@ -74,7 +74,7 @@ export default function InventoryPage() {
   };
 
   const handleStartScan = async () => {
-    const ok = await requestStream();
+    const ok = await requestCamera();
     if (ok) setStage("scanning");
   };
 
