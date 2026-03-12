@@ -27,7 +27,7 @@ const PAID_MOVEMENTS: TransactionType[] = ["depot_sold", "auteur", "internet"];
 
 export default function MovementsPage() {
   const { getBook, sellBook, recordMovement, searchBooks } = useStore();
-  const { stream, requestStream, stopStream } = useCameraStream();
+  const { cameraId, requestCamera, reset: resetCamera } = useCameraStream();
   const [stage, setStage] = useState<Stage>("idle");
   const [currentBook, setCurrentBook] = useState<Book | null>(null);
   const [selectedType, setSelectedType] = useState<TransactionType | null>(null);
