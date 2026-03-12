@@ -65,11 +65,17 @@ export default function InventoryPage() {
 
   const reset = () => {
     setStage("idle");
+    stopStream();
     setIsbn("");
     setEditTitle("");
     setEditAuthor("");
     setPrice("");
     setQty("1");
+  };
+
+  const handleStartScan = async () => {
+    const ok = await requestStream();
+    if (ok) setStage("scanning");
   };
 
   return (
