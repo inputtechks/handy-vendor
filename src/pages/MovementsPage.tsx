@@ -150,7 +150,7 @@ export default function MovementsPage() {
       <AnimatePresence mode="wait">
         {stage === "idle" && (
           <motion.div key="idle" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex-1 flex flex-col justify-center">
-            <Button onClick={() => setStage("scanning")} variant="secondary" className="w-full h-32 text-2xl font-black gap-4 rounded-xl">
+            <Button onClick={handleStartScan} variant="secondary" className="w-full h-32 text-2xl font-black gap-4 rounded-xl">
               <ScanBarcode className="h-10 w-10" />
               SCAN FOR MOVEMENT
             </Button>
