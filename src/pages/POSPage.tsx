@@ -13,6 +13,7 @@ type Stage = "idle" | "scanning" | "confirm" | "cash-change" | "done" | "error";
 
 export default function POSPage() {
   const { getBook, sellBook, searchBooks } = useStore();
+  const { stream, requestStream, stopStream } = useCameraStream();
   const [stage, setStage] = useState<Stage>("idle");
   const [currentBook, setCurrentBook] = useState<Book | null>(null);
   const [lastMethod, setLastMethod] = useState<"cash" | "card" | "twint" | null>(null);
