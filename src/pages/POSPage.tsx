@@ -96,6 +96,7 @@ export default function POSPage() {
 
   const reset = () => {
     setStage("idle");
+    stopStream();
     setCurrentBook(null);
     setErrorMsg("");
     setSellQty(1);
@@ -104,6 +105,11 @@ export default function POSPage() {
     setAmountReceived("");
     setChangeAmount(null);
     setLastMethod(null);
+  };
+
+  const handleStartScan = async () => {
+    const ok = await requestStream();
+    if (ok) setStage("scanning");
   };
 
   const handleDiscountChange = (val: string) => {
