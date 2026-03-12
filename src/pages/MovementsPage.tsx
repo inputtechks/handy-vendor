@@ -5,6 +5,7 @@ import { BookInfoCard } from "@/components/BookInfoCard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScanBarcode, Search, Check, XCircle, Minus, Plus, ArrowRightLeft } from "lucide-react";
+import { useCameraStream } from "@/hooks/useCameraStream";
 import { motion, AnimatePresence } from "framer-motion";
 import type { Book, TransactionType } from "@/types/book";
 import { TRANSACTION_LABELS } from "@/types/book";
