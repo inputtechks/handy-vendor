@@ -65,7 +65,7 @@ export default function InventoryPage() {
 
   const reset = () => {
     setStage("idle");
-    stopStream();
+    resetCamera();
     setIsbn("");
     setEditTitle("");
     setEditAuthor("");
