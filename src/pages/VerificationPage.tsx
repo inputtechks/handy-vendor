@@ -15,7 +15,7 @@ export default function VerificationPage() {
         <div className="flex justify-end">
           <LanguageToggle />
         </div>
-        <img src={helvelittLogo} alt="HelveLitt" className="h-14 mx-auto object-contain" />
+        <img src={helvelittLogo} alt="HelveLitt" className="h-20 mx-auto object-contain mix-blend-multiply" />
         <div className="h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto">
           <Clock className="h-8 w-8 text-primary" />
         </div>
