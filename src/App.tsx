@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider, useAuth } from "@/context/AuthContext";
 import { StoreProvider } from "@/context/StoreContext";
+import { LanguageProvider } from "@/context/LanguageContext";
 import { BottomNav } from "@/components/BottomNav";
 import InventoryPage from "@/pages/InventoryPage";
 import POSPage from "@/pages/POSPage";
@@ -46,15 +47,17 @@ function AppRoutes() {
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
-      <AuthProvider>
-        <StoreProvider>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
-            <AppRoutes />
-          </BrowserRouter>
-        </StoreProvider>
-      </AuthProvider>
+      <LanguageProvider>
+        <AuthProvider>
+          <StoreProvider>
+            <Toaster />
+            <Sonner />
+            <BrowserRouter>
+              <AppRoutes />
+            </BrowserRouter>
+          </StoreProvider>
+        </AuthProvider>
+      </LanguageProvider>
     </TooltipProvider>
   </QueryClientProvider>
 );

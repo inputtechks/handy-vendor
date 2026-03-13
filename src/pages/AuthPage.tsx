@@ -1,11 +1,14 @@
 import { useState } from "react";
 import { useAuth } from "@/context/AuthContext";
+import { useLanguage } from "@/context/LanguageContext";
+import { LanguageToggle } from "@/components/LanguageToggle";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Loader2 } from "lucide-react";
 
 export default function AuthPage() {
   const { signIn, signUp } = useAuth();
+  const { t } = useLanguage();
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -27,7 +30,7 @@ export default function AuthPage() {
       if (error) {
         setError(error.message);
       } else {
-        setSuccess("Check your email to confirm your account, then sign in.");
+        setSuccess(t("auth.checkEmail"));
       }
     }
     setLoading(false);
@@ -36,36 +39,24 @@ export default function AuthPage() {
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <div className="w-full max-w-sm space-y-6">
-        <div className="text-center">
-          <h1 className="text-3xl font-black tracking-tight">📚 BookBooth</h1>
-          <p className="text-muted-foreground mt-1 text-sm">
-            {isLogin ? "Sign in to your vendor account" : "Create a new vendor account"}
+        <div className="text-center space-y-2">
+          <div className="flex justify-end">
+            <LanguageToggle />
+          </div>
+          <h1 className="text-3xl font-black tracking-tight">{t("auth.title")}</h1>
+          <p className="text-muted-foreground text-sm">
+            {isLogin ? t("auth.signInSubtitle") : t("auth.signUpSubtitle")}
           </p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="text-sm font-semibold text-muted-foreground mb-1 block">Email</label>
-            <Input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="you@example.com"
-              required
-              className="h-12 text-base bg-secondary"
-            />
+            <label className="text-sm font-semibold text-muted-foreground mb-1 block">{t("auth.email")}</label>
+            <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" required className="h-12 text-base bg-secondary" />
           </div>
           <div>
-            <label className="text-sm font-semibold text-muted-foreground mb-1 block">Password</label>
-            <Input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••"
-              required
-              minLength={6}
-              className="h-12 text-base bg-secondary"
-            />
+            <label className="text-sm font-semibold text-muted-foreground mb-1 block">{t("auth.password")}</label>
+            <Input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" required minLength={6} className="h-12 text-base bg-secondary" />
           </div>
 
           {error && <p className="text-destructive text-sm font-medium text-center">{error}</p>}
@@ -73,17 +64,17 @@ export default function AuthPage() {
 
           <Button type="submit" className="w-full h-14 text-lg font-bold" disabled={loading}>
             {loading && <Loader2 className="h-5 w-5 animate-spin mr-2" />}
-            {isLogin ? "Sign In" : "Create Account"}
+            {isLogin ? t("auth.signIn") : t("auth.createAccount")}
           </Button>
         </form>
 
         <p className="text-center text-sm text-muted-foreground">
-          {isLogin ? "Don't have an account?" : "Already have an account?"}{" "}
+          {isLogin ? t("auth.noAccount") : t("auth.hasAccount")}{" "}
           <button
             onClick={() => { setIsLogin(!isLogin); setError(""); setSuccess(""); }}
             className="text-primary font-bold underline underline-offset-2"
           >
-            {isLogin ? "Sign Up" : "Sign In"}
+            {isLogin ? t("auth.signUp") : t("auth.signIn")}
           </button>
         </p>
       </div>
