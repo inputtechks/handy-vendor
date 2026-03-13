@@ -14,13 +14,14 @@ import MovementsPage from "@/pages/MovementsPage";
 import DashboardPage from "@/pages/DashboardPage";
 import AuthPage from "@/pages/AuthPage";
 import VerificationPage from "@/pages/VerificationPage";
+import AdminPage from "@/pages/AdminPage";
 import NotFound from "./pages/NotFound";
 import { Loader2 } from "lucide-react";
 
 const queryClient = new QueryClient();
 
 function AppRoutes() {
-  const { user, loading, isApproved } = useAuth();
+  const { user, loading, isApproved, isAdmin } = useAuth();
 
   if (loading) {
     return (
@@ -41,6 +42,24 @@ function AppRoutes() {
     );
   }
 
+  // Admin: full access including admin panel (admins bypass approval gate)
+  if (isAdmin) {
+    return (
+      <>
+        <Routes>
+          <Route path="/dashboard" element={<InventoryPage />} />
+          <Route path="/dashboard/sell" element={<POSPage />} />
+          <Route path="/dashboard/movements" element={<MovementsPage />} />
+          <Route path="/dashboard/report" element={<DashboardPage />} />
+          <Route path="/dashboard/admin" element={<AdminPage />} />
+          <Route path="/" element={<Navigate to="/dashboard" replace />} />
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+        <BottomNav />
+      </>
+    );
+  }
+
   // Logged in but not approved: verification gate
   if (!isApproved) {
     return (
@@ -51,7 +70,7 @@ function AppRoutes() {
     );
   }
 
-  // Approved: full dashboard access
+  // Approved regular user: full dashboard access
   return (
     <>
       <Routes>
