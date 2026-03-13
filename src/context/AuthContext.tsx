@@ -7,6 +7,7 @@ interface AuthContextType {
   session: Session | null;
   loading: boolean;
   isApproved: boolean;
+  isAdmin: boolean;
   signUp: (email: string, password: string) => Promise<{ error: Error | null }>;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
@@ -19,14 +20,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const [isApproved, setIsApproved] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
 
-  const fetchApproval = async (userId: string) => {
-    const { data } = await supabase
+  const fetchProfileAndRole = async (userId: string) => {
+    // Fetch approval status
+    const { data: profile } = await supabase
       .from("profiles")
       .select("is_approved")
       .eq("id", userId)
       .single();
-    setIsApproved(data?.is_approved ?? false);
+    setIsApproved(profile?.is_approved ?? false);
+
+    // Fetch admin role
+    const { data: roles } = await supabase
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", userId);
+    const hasAdmin = roles?.some((r: any) => r.role === "admin") ?? false;
+    setIsAdmin(hasAdmin);
   };
 
   useEffect(() => {
@@ -34,9 +45,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setSession(session);
       setUser(session?.user ?? null);
       if (session?.user) {
-        fetchApproval(session.user.id);
+        fetchProfileAndRole(session.user.id);
       } else {
         setIsApproved(false);
+        setIsAdmin(false);
       }
       setLoading(false);
     });
@@ -45,7 +57,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setSession(session);
       setUser(session?.user ?? null);
       if (session?.user) {
-        fetchApproval(session.user.id);
+        fetchProfileAndRole(session.user.id);
       }
       setLoading(false);
     });
@@ -72,7 +84,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, session, loading, isApproved, signUp, signIn, signOut }}>
+    <AuthContext.Provider value={{ user, session, loading, isApproved, isAdmin, signUp, signIn, signOut }}>
       {children}
     </AuthContext.Provider>
   );
