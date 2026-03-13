@@ -8,7 +8,7 @@ const translations: Record<string, Record<Language, string>> = {
   "nav.report": { en: "Report", de: "Bericht", fr: "Rapport" },
 
   // Auth
-  "auth.title": { en: "📚 BookBooth", de: "📚 BookBooth", fr: "📚 BookBooth" },
+  "auth.title": { en: "HelveLitt", de: "HelveLitt", fr: "HelveLitt" },
   "auth.signInSubtitle": { en: "Sign in to your account", de: "Melden Sie sich bei Ihrem Konto an", fr: "Connectez-vous à votre compte" },
   "auth.signUpSubtitle": { en: "Create a new vendor account", de: "Neues Verkäuferkonto erstellen", fr: "Créer un nouveau compte vendeur" },
   "auth.email": { en: "Email", de: "E-Mail", fr: "E-mail" },
@@ -19,9 +19,39 @@ const translations: Record<string, Record<Language, string>> = {
   "auth.noAccount": { en: "Don't have an account?", de: "Noch kein Konto?", fr: "Pas encore de compte ?" },
   "auth.hasAccount": { en: "Already have an account?", de: "Bereits ein Konto?", fr: "Déjà un compte ?" },
   "auth.checkEmail": { en: "Check your email to confirm your account.", de: "Überprüfen Sie Ihre E-Mail, um Ihr Konto zu bestätigen.", fr: "Vérifiez votre e-mail pour confirmer votre compte." },
+  "auth.backToHome": { en: "Back to home", de: "Zurück zur Startseite", fr: "Retour à l'accueil" },
+
+  // Landing
+  "landing.slogan": { en: "Swiss technology at the service of books.", de: "Schweizer Technologie im Dienste des Buches.", fr: "La technologie suisse au service du livre." },
+  "landing.subheadline": { en: "Digitize your literary management with Swiss precision.", de: "Digitalisieren Sie Ihre Buchverwaltung mit Schweizer Präzision.", fr: "Digitalisez votre gestion littéraire avec la précision helvétique." },
+  "landing.getStarted": { en: "Get Started", de: "Jetzt starten", fr: "Commencer" },
+  "landing.pricing": { en: "Pricing", de: "Preise", fr: "Tarifs" },
+  "landing.monthly": { en: "Monthly", de: "Monatlich", fr: "Mensuel" },
+  "landing.semester": { en: "Semester", de: "Halbjährlich", fr: "Semestriel" },
+  "landing.annual": { en: "Annual", de: "Jährlich", fr: "Annuel" },
+  "landing.monthlyPrice": { en: "20 CHF / month", de: "20 CHF / Monat", fr: "20 CHF / mois" },
+  "landing.semesterPrice": { en: "110 CHF / 6 months", de: "110 CHF / 6 Monate", fr: "110 CHF / 6 mois" },
+  "landing.annualPrice": { en: "200 CHF / year", de: "200 CHF / Jahr", fr: "200 CHF / an" },
+  "landing.recommended": { en: "Recommended", de: "Empfohlen", fr: "Recommandé" },
+  "landing.subscribe": { en: "Subscribe", de: "Abonnieren", fr: "S'abonner" },
+  "landing.feature1Title": { en: "POS & Barcode", de: "POS & Barcode", fr: "POS & Code-barres" },
+  "landing.feature1Desc": { en: "Scan, sell, and track books with a mobile-first point of sale.", de: "Bücher scannen, verkaufen und verfolgen mit mobilem Kassensystem.", fr: "Scannez, vendez et suivez vos livres avec un point de vente mobile." },
+  "landing.feature2Title": { en: "Multi-Channel", de: "Multikanal", fr: "Multi-canal" },
+  "landing.feature2Desc": { en: "Manage retail, dépôt, author copies, internet, and press movements.", de: "Verwalten Sie Einzelhandel, Dépôt, Autorenexemplare, Internet und Pressebewegungen.", fr: "Gérez vente au détail, dépôt, exemplaires d'auteur, internet et presse." },
+  "landing.feature3Title": { en: "Dashboard & Export", de: "Dashboard & Export", fr: "Tableau de bord & Export" },
+  "landing.feature3Desc": { en: "Real-time revenue reports, stock alerts, and CSV exports.", de: "Echtzeit-Umsatzberichte, Bestandswarnungen und CSV-Exporte.", fr: "Rapports de revenus en temps réel, alertes de stock et exports CSV." },
+  "landing.footer": { en: "© 2025 HelveLitt — Swiss technology at the service of books.", de: "© 2025 HelveLitt — Schweizer Technologie im Dienste des Buches.", fr: "© 2025 HelveLitt — La technologie suisse au service du livre." },
+
+  // Verification
+  "verify.title": { en: "Account Verification", de: "Kontoüberprüfung", fr: "Vérification du compte" },
+  "verify.message": {
+    en: "Thank you for choosing HelveLitt. Your account is currently being verified. Access is granted once your subscription is confirmed. This process typically takes less than 24 hours.",
+    de: "Vielen Dank, dass Sie sich für HelveLitt entschieden haben. Ihr Konto wird derzeit überprüft. Der Zugang wird gewährt, sobald Ihr Abonnement bestätigt ist. Dieser Vorgang dauert in der Regel weniger als 24 Stunden.",
+    fr: "Merci d'avoir choisi HelveLitt. Votre compte est en cours de vérification. L'accès sera accordé une fois votre abonnement confirmé. Ce processus prend généralement moins de 24 heures.",
+  },
 
   // Inventory
-  "inv.title": { en: "📦 Inventory", de: "📦 Inventar", fr: "📦 Inventaire" },
+  "inv.title": { en: "Inventory", de: "Inventar", fr: "Inventaire" },
   "inv.subtitle": { en: "Scan or search to add books", de: "Scannen oder suchen um Bücher hinzuzufügen", fr: "Scanner ou rechercher pour ajouter des livres" },
   "inv.searchPlaceholder": { en: "Search by title, author or ISBN...", de: "Titel, Autor oder ISBN suchen...", fr: "Chercher par titre, auteur ou ISBN..." },
   "inv.noBooksFound": { en: "No books found", de: "Keine Bücher gefunden", fr: "Aucun livre trouvé" },
@@ -42,7 +72,7 @@ const translations: Record<string, Record<Language, string>> = {
   "inv.remove": { en: "Remove", de: "Entfernen", fr: "Supprimer" },
 
   // POS / Sales
-  "pos.title": { en: "💰 Sales", de: "💰 Verkauf", fr: "💰 Ventes" },
+  "pos.title": { en: "Sales", de: "Verkauf", fr: "Ventes" },
   "pos.searchPlaceholder": { en: "Search book by name...", de: "Buch nach Name suchen...", fr: "Chercher un livre par nom..." },
   "pos.scanToSell": { en: "SCAN TO SELL", de: "SCANNEN ZUM VERKAUFEN", fr: "SCANNER POUR VENDRE" },
   "pos.available": { en: "available", de: "verfügbar", fr: "disponible(s)" },
@@ -104,7 +134,7 @@ const translations: Record<string, Record<Language, string>> = {
   "tx.sp": { en: "SP (Press)", de: "SP (Presse)", fr: "SP (Presse)" },
 
   // Dashboard
-  "dash.title": { en: "📊 Dashboard", de: "📊 Dashboard", fr: "📊 Tableau de bord" },
+  "dash.title": { en: "Dashboard", de: "Dashboard", fr: "Tableau de bord" },
   "dash.overview": { en: "Overview", de: "Übersicht", fr: "Aperçu" },
   "dash.signOut": { en: "Sign Out", de: "Abmelden", fr: "Déconnexion" },
   "dash.revenue": { en: "Revenue", de: "Umsatz", fr: "Revenus" },

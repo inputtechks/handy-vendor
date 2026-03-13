@@ -4,7 +4,9 @@ import { useLanguage } from "@/context/LanguageContext";
 import { LanguageToggle } from "@/components/LanguageToggle";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Loader2 } from "lucide-react";
+import { Loader2, ArrowLeft } from "lucide-react";
+import { Link } from "react-router-dom";
+import helvelittLogo from "@/assets/helvelitt-logo.png";
 
 export default function AuthPage() {
   const { signIn, signUp } = useAuth();
@@ -40,10 +42,14 @@ export default function AuthPage() {
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <div className="w-full max-w-sm space-y-6">
         <div className="text-center space-y-2">
-          <div className="flex justify-end">
+          <div className="flex items-center justify-between">
+            <Link to="/" className="text-muted-foreground hover:text-foreground transition-colors">
+              <ArrowLeft className="h-5 w-5" />
+            </Link>
             <LanguageToggle />
           </div>
-          <h1 className="text-3xl font-black tracking-tight">{t("auth.title")}</h1>
+          <img src={helvelittLogo} alt="HelveLitt" className="h-14 w-14 mx-auto object-contain" />
+          <h1 className="text-3xl font-black tracking-tight text-foreground">{t("auth.title")}</h1>
           <p className="text-muted-foreground text-sm">
             {isLogin ? t("auth.signInSubtitle") : t("auth.signUpSubtitle")}
           </p>
@@ -52,11 +58,11 @@ export default function AuthPage() {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="text-sm font-semibold text-muted-foreground mb-1 block">{t("auth.email")}</label>
-            <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" required className="h-12 text-base bg-secondary" />
+            <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" required className="h-12 text-base bg-card border-border" />
           </div>
           <div>
             <label className="text-sm font-semibold text-muted-foreground mb-1 block">{t("auth.password")}</label>
-            <Input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" required minLength={6} className="h-12 text-base bg-secondary" />
+            <Input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" required minLength={6} className="h-12 text-base bg-card border-border" />
           </div>
 
           {error && <p className="text-destructive text-sm font-medium text-center">{error}</p>}

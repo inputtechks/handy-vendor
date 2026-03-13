@@ -13,19 +13,19 @@ export function BottomNav() {
   return (
     <nav className="fixed bottom-0 left-0 right-0 bg-card border-t border-border z-50">
       <div className="flex justify-around items-center h-16 max-w-lg mx-auto">
-        <NavLink to="/" className={linkClass}>
+        <NavLink to="/dashboard" end className={linkClass}>
           <Package className="h-5 w-5" />
           <span className="text-[10px] font-bold">{t("nav.inventory")}</span>
         </NavLink>
-        <NavLink to="/sell" className={linkClass}>
+        <NavLink to="/dashboard/sell" className={linkClass}>
           <ShoppingCart className="h-5 w-5" />
           <span className="text-[10px] font-bold">{t("nav.sell")}</span>
         </NavLink>
-        <NavLink to="/movements" className={linkClass}>
+        <NavLink to="/dashboard/movements" className={linkClass}>
           <ArrowRightLeft className="h-5 w-5" />
           <span className="text-[10px] font-bold">{t("nav.movements")}</span>
         </NavLink>
-        <NavLink to="/dashboard" className={linkClass}>
+        <NavLink to="/dashboard/report" className={linkClass}>
           <BarChart3 className="h-5 w-5" />
           <span className="text-[10px] font-bold">{t("nav.report")}</span>
         </NavLink>
