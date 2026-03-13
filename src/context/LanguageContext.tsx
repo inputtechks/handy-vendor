@@ -11,7 +11,7 @@ const LanguageContext = createContext<LanguageContextValue | undefined>(undefine
 
 export function LanguageProvider({ children }: { children: ReactNode }) {
   const [language, setLanguageState] = useState<Language>(() => {
-    const stored = localStorage.getItem("bookbooth-lang");
+    const stored = localStorage.getItem("helvelitt-lang") ?? localStorage.getItem("bookbooth-lang");
     return stored === "en" || stored === "de" || stored === "fr" ? stored : "fr";
   });
 

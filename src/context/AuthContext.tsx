@@ -22,45 +22,45 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isApproved, setIsApproved] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
 
-  const fetchProfileAndRole = async (userId: string) => {
-    const [{ data: profile }, { data: roles }] = await Promise.all([
-      supabase.from("profiles").select("is_approved").eq("id", userId).single(),
-      supabase.from("user_roles").select("role").eq("user_id", userId),
-    ]);
-    setIsApproved(profile?.is_approved ?? false);
-    setIsAdmin(roles?.some((r: any) => r.role === "admin") ?? false);
+  const syncAccessState = async (sess: Session | null) => {
+    try {
+      if (!sess?.user) {
+        setSession(null);
+        setUser(null);
+        setIsApproved(false);
+        setIsAdmin(false);
+        return;
+      }
+
+      setSession(sess);
+      setUser(sess.user);
+
+      const [{ data: profile }, { data: roles }] = await Promise.all([
+        supabase.from("profiles").select("is_approved").eq("id", sess.user.id).single(),
+        supabase.from("user_roles").select("role").eq("user_id", sess.user.id),
+      ]);
+
+      setIsApproved(profile?.is_approved ?? false);
+      setIsAdmin(roles?.some((r: any) => r.role === "admin") ?? false);
+    } catch (err) {
+      console.error("Auth sync error:", err);
+      setIsApproved(false);
+      setIsAdmin(false);
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
-    let mounted = true;
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
-      if (!mounted) return;
-      setSession(session);
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        await fetchProfileAndRole(session.user.id);
-      } else {
-        setIsApproved(false);
-        setIsAdmin(false);
-      }
-      setLoading(false);
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, sess) => {
+      void syncAccessState(sess);
     });
 
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
-      if (!mounted) return;
-      setSession(session);
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        await fetchProfileAndRole(session.user.id);
-      }
-      setLoading(false);
+    supabase.auth.getSession().then(({ data: { session: sess } }) => {
+      void syncAccessState(sess);
     });
 
-    return () => {
-      mounted = false;
-      subscription.unsubscribe();
-    };
+    return () => subscription.unsubscribe();
   }, []);
 
   const signUp = async (email: string, password: string) => {
