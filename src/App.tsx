@@ -53,7 +53,7 @@ function AppRoutes() {
           <Route path="/dashboard/report" element={<DashboardPage />} />
           <Route path="/dashboard/admin" element={<AdminPage />} />
           <Route path="/" element={<Navigate to="/dashboard" replace />} />
-          <Route path="*" element={<NotFound />} />
+          <Route path="*" element={<Navigate to="/dashboard" replace />} />
         </Routes>
         <BottomNav />
       </>
@@ -79,7 +79,7 @@ function AppRoutes() {
         <Route path="/dashboard/movements" element={<MovementsPage />} />
         <Route path="/dashboard/report" element={<DashboardPage />} />
         <Route path="/" element={<Navigate to="/dashboard" replace />} />
-        <Route path="*" element={<NotFound />} />
+        <Route path="*" element={<Navigate to="/dashboard" replace />} />
       </Routes>
       <BottomNav />
     </>
