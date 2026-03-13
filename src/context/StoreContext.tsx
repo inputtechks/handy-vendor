@@ -47,6 +47,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
           coverUrl: b.cover_url,
           salePrice: Number(b.sale_price),
           quantity: b.quantity,
+          category: (b as any).category ?? "",
         })));
       }
 
