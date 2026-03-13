@@ -213,6 +213,7 @@ export default function InventoryPage() {
       )}
 
       <BulkImportModal open={importOpen} onOpenChange={setImportOpen} />
+      <EditBookModal book={editBook} open={!!editBook} onOpenChange={(o) => { if (!o) setEditBook(null); }} />
     </div>
   );
 }

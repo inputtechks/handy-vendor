@@ -70,6 +70,9 @@ const translations: Record<string, Record<Language, string>> = {
   "inv.removeTitle": { en: "Remove", de: "Entfernen", fr: "Supprimer" },
   "inv.removeConfirm": { en: "This will permanently remove this book from your inventory.", de: "Dies entfernt das Buch dauerhaft aus Ihrem Inventar.", fr: "Cela supprimera définitivement ce livre de votre inventaire." },
   "inv.remove": { en: "Remove", de: "Entfernen", fr: "Supprimer" },
+  "inv.editBook": { en: "Edit Book", de: "Buch bearbeiten", fr: "Modifier le livre" },
+  "inv.bookUpdated": { en: "Book updated!", de: "Buch aktualisiert!", fr: "Livre mis à jour !" },
+  "inv.saveChanges": { en: "Save Changes", de: "Änderungen speichern", fr: "Enregistrer" },
 
   // POS / Sales
   "pos.title": { en: "Sales", de: "Verkauf", fr: "Ventes" },
