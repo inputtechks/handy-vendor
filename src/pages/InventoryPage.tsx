@@ -205,6 +205,8 @@ export default function InventoryPage() {
           </div>
         </div>
       )}
+
+      <BulkImportModal open={importOpen} onOpenChange={setImportOpen} />
     </div>
   );
 }
