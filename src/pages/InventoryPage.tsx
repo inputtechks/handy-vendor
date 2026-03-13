@@ -7,7 +7,9 @@ import { BookInfoCard } from "@/components/BookInfoCard";
 import { BulkImportModal, downloadTemplate } from "@/components/BulkImportModal";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, Plus, ScanBarcode, Check, Trash2, FileDown, Upload } from "lucide-react";
+import { Search, Plus, ScanBarcode, Check, Trash2, FileDown, Upload, Pencil } from "lucide-react";
+import { EditBookModal } from "@/components/EditBookModal";
+import type { Book } from "@/types/book";
 import { useCameraStream } from "@/hooks/useCameraStream";
 import { motion, AnimatePresence } from "framer-motion";
 import {
