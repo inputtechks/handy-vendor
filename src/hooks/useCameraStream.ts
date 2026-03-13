@@ -3,8 +3,8 @@ import { useState, useCallback } from "react";
 const SCAN_CONSTRAINTS: MediaStreamConstraints = {
   video: {
     facingMode: { ideal: "environment" },
-    width: { ideal: 1920 },
-    height: { ideal: 1080 },
+    width: { ideal: 1280 },
+    height: { ideal: 720 },
     frameRate: { ideal: 30, min: 15 },
     // @ts-ignore
     focusMode: { ideal: "continuous" },
@@ -30,20 +30,28 @@ export function useCameraStream() {
 
       const track = mediaStream.getVideoTracks()[0];
 
-      // Apply continuous autofocus immediately + after delay for iOS
-      const applyAutofocus = () => {
+      // Apply continuous autofocus + white balance immediately + after delay for iOS
+      const applyOptimizations = () => {
         try {
           // @ts-ignore
           const capabilities = track.getCapabilities?.();
+          const advanced: any[] = [];
           // @ts-ignore
           if (capabilities?.focusMode?.includes("continuous")) {
+            advanced.push({ focusMode: "continuous" });
+          }
+          // @ts-ignore
+          if (capabilities?.whiteBalanceMode?.includes("continuous")) {
+            advanced.push({ whiteBalanceMode: "continuous" });
+          }
+          if (advanced.length > 0) {
             // @ts-ignore
-            track.applyConstraints({ advanced: [{ focusMode: "continuous" }] });
+            track.applyConstraints({ advanced });
           }
         } catch {}
       };
-      applyAutofocus();
-      setTimeout(applyAutofocus, 1000);
+      applyOptimizations();
+      setTimeout(applyOptimizations, 800);
 
       let deviceId = track?.getSettings()?.deviceId || null;
       mediaStream.getTracks().forEach((t) => t.stop());
