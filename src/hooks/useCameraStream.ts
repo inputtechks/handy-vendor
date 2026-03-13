@@ -1,12 +1,12 @@
 import { useState, useCallback } from "react";
 
-/** Optimal video constraints for barcode scanning – prioritises autofocus + high res */
 const SCAN_CONSTRAINTS: MediaStreamConstraints = {
   video: {
     facingMode: { ideal: "environment" },
     width: { ideal: 1920 },
     height: { ideal: 1080 },
-    // @ts-ignore – focusMode is valid but not in TS lib types
+    frameRate: { ideal: 30, min: 15 },
+    // @ts-ignore
     focusMode: { ideal: "continuous" },
   },
 };
@@ -19,12 +19,10 @@ export function useCameraStream() {
     try {
       setError(null);
 
-      // 1. Open camera with ideal autofocus + HD constraints
       let mediaStream: MediaStream;
       try {
         mediaStream = await navigator.mediaDevices.getUserMedia(SCAN_CONSTRAINTS);
       } catch {
-        // Fallback for devices that reject advanced constraints
         mediaStream = await navigator.mediaDevices.getUserMedia({
           video: { facingMode: "environment" },
         });
@@ -32,21 +30,24 @@ export function useCameraStream() {
 
       const track = mediaStream.getVideoTracks()[0];
 
-      // 2. Try to enable continuous autofocus via applyConstraints (iOS Safari)
-      try {
-        // @ts-ignore
-        const capabilities = track.getCapabilities?.();
-        // @ts-ignore
-        if (capabilities?.focusMode?.includes("continuous")) {
+      // Apply continuous autofocus immediately + after delay for iOS
+      const applyAutofocus = () => {
+        try {
           // @ts-ignore
-          await track.applyConstraints({ advanced: [{ focusMode: "continuous" }] });
-        }
-      } catch {}
+          const capabilities = track.getCapabilities?.();
+          // @ts-ignore
+          if (capabilities?.focusMode?.includes("continuous")) {
+            // @ts-ignore
+            track.applyConstraints({ advanced: [{ focusMode: "continuous" }] });
+          }
+        } catch {}
+      };
+      applyAutofocus();
+      setTimeout(applyAutofocus, 1000);
 
       let deviceId = track?.getSettings()?.deviceId || null;
       mediaStream.getTracks().forEach((t) => t.stop());
 
-      // Huawei fallback: getSettings().deviceId may be empty
       if (!deviceId) {
         try {
           const devices = await navigator.mediaDevices.enumerateDevices();
