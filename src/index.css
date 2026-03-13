@@ -74,3 +74,13 @@
     @apply min-h-[48px] min-w-[48px];
   }
 }
+
+/* Scanning laser line animation */
+@keyframes scan-line {
+  0%, 100% { top: 10%; }
+  50% { top: 85%; }
+}
+
+.animate-scan-line {
+  animation: scan-line 2s ease-in-out infinite;
+}
