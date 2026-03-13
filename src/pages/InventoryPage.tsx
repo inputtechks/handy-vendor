@@ -4,9 +4,10 @@ import { useLanguage } from "@/context/LanguageContext";
 import { LanguageToggle } from "@/components/LanguageToggle";
 import { BarcodeScanner } from "@/components/BarcodeScanner";
 import { BookInfoCard } from "@/components/BookInfoCard";
+import { BulkImportModal, downloadTemplate } from "@/components/BulkImportModal";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, Plus, ScanBarcode, Check, Trash2 } from "lucide-react";
+import { Search, Plus, ScanBarcode, Check, Trash2, FileDown, Upload } from "lucide-react";
 import { useCameraStream } from "@/hooks/useCameraStream";
 import { motion, AnimatePresence } from "framer-motion";
 import {
