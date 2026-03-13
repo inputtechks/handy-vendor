@@ -4,9 +4,10 @@ import { useLanguage } from "@/context/LanguageContext";
 import { LanguageToggle } from "@/components/LanguageToggle";
 import { BarcodeScanner } from "@/components/BarcodeScanner";
 import { BookInfoCard } from "@/components/BookInfoCard";
+import { BulkImportModal, downloadTemplate } from "@/components/BulkImportModal";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, Plus, ScanBarcode, Check, Trash2 } from "lucide-react";
+import { Search, Plus, ScanBarcode, Check, Trash2, FileDown, Upload } from "lucide-react";
 import { useCameraStream } from "@/hooks/useCameraStream";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -28,6 +29,7 @@ export default function InventoryPage() {
   const [qty, setQty] = useState("1");
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<typeof books>([]);
+  const [importOpen, setImportOpen] = useState(false);
 
   const handleScan = useCallback((code: string) => {
     setIsbn(code);
@@ -48,6 +50,7 @@ export default function InventoryPage() {
       coverUrl: "",
       salePrice: p,
       quantity: q,
+      category: "",
     });
 
     setStage("added");
@@ -81,6 +84,17 @@ export default function InventoryPage() {
         </div>
         <LanguageToggle />
       </header>
+
+      <div className="flex gap-2 mb-4">
+        <Button variant="outline" size="sm" onClick={() => downloadTemplate()} className="gap-1.5 flex-1">
+          <FileDown className="h-4 w-4" />
+          {t("bulk.downloadTemplate")}
+        </Button>
+        <Button variant="outline" size="sm" onClick={() => setImportOpen(true)} className="gap-1.5 flex-1">
+          <Upload className="h-4 w-4" />
+          {t("bulk.importExcel")}
+        </Button>
+      </div>
 
       <div className="relative mb-4">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
@@ -191,6 +205,8 @@ export default function InventoryPage() {
           </div>
         </div>
       )}
+
+      <BulkImportModal open={importOpen} onOpenChange={setImportOpen} />
     </div>
   );
 }

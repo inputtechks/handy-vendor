@@ -5,6 +5,7 @@ export interface Book {
   coverUrl: string;
   salePrice: number;
   quantity: number;
+  category: string;
 }
 
 export type TransactionType =

@@ -171,6 +171,26 @@ const translations: Record<string, Record<Language, string>> = {
   "common.cancel": { en: "Cancel", de: "Abbrechen", fr: "Annuler" },
   "common.back": { en: "Back", de: "Zurück", fr: "Retour" },
   "common.tryAgain": { en: "Try Again", de: "Erneut versuchen", fr: "Réessayer" },
+
+  // Bulk Import
+  "bulk.title": { en: "Import from Excel", de: "Aus Excel importieren", fr: "Importer depuis Excel" },
+  "bulk.instructions": { en: "Upload an Excel file (.xlsx) using the HelveLitt template to bulk-add books to your inventory.", de: "Laden Sie eine Excel-Datei (.xlsx) mit der HelveLitt-Vorlage hoch, um Bücher massenweise hinzuzufügen.", fr: "Téléchargez un fichier Excel (.xlsx) avec le modèle HelveLitt pour ajouter des livres en masse." },
+  "bulk.downloadTemplate": { en: "Download Excel Template", de: "Excel-Vorlage herunterladen", fr: "Télécharger le modèle Excel" },
+  "bulk.selectFile": { en: "Select File", de: "Datei auswählen", fr: "Sélectionner un fichier" },
+  "bulk.invalidFormat": { en: "Invalid format. Please use the HelveLitt template.", de: "Ungültiges Format. Bitte verwenden Sie die HelveLitt-Vorlage.", fr: "Format invalide. Veuillez utiliser le modèle HelveLitt." },
+  "bulk.noValidRows": { en: "No valid rows found. Check that Title, ISBN and Price are filled.", de: "Keine gültigen Zeilen gefunden. Prüfen Sie Titel, ISBN und Preis.", fr: "Aucune ligne valide trouvée. Vérifiez le titre, l'ISBN et le prix." },
+  "bulk.parseError": { en: "Could not read the file. Please try again.", de: "Datei konnte nicht gelesen werden. Bitte versuchen Sie es erneut.", fr: "Impossible de lire le fichier. Veuillez réessayer." },
+  "bulk.previewCount": { en: "{count} books ready to import", de: "{count} Bücher bereit zum Importieren", fr: "{count} livres prêts à importer" },
+  "bulk.moreRows": { en: "more rows", de: "weitere Zeilen", fr: "lignes supplémentaires" },
+  "bulk.duplicatesFound": { en: "{count} duplicate ISBN(s) found in your inventory:", de: "{count} doppelte ISBN(s) in Ihrem Inventar gefunden:", fr: "{count} ISBN(s) en double trouvé(s) dans votre inventaire :" },
+  "bulk.skipDuplicates": { en: "Skip duplicates", de: "Duplikate überspringen", fr: "Ignorer les doublons" },
+  "bulk.updateQuantities": { en: "Update quantities (add to existing)", de: "Mengen aktualisieren (zu vorhandenen hinzufügen)", fr: "Mettre à jour les quantités (ajouter aux existants)" },
+  "bulk.finalizeImport": { en: "Finalize Import", de: "Import abschliessen", fr: "Finaliser l'import" },
+  "bulk.importing": { en: "Importing books", de: "Bücher werden importiert", fr: "Import en cours" },
+  "bulk.importComplete": { en: "Import complete!", de: "Import abgeschlossen!", fr: "Import terminé !" },
+  "bulk.importedCount": { en: "{count} books imported", de: "{count} Bücher importiert", fr: "{count} livres importés" },
+  "bulk.skippedCount": { en: "{count} skipped", de: "{count} übersprungen", fr: "{count} ignoré(s)" },
+  "bulk.importExcel": { en: "Import Excel", de: "Excel importieren", fr: "Importer Excel" },
 };
 
 export function getTranslation(key: string, lang: Language): string {
