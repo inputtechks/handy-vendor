@@ -188,6 +188,9 @@ export default function InventoryPage() {
             {books.map((b) => (
               <div key={b.isbn} className="flex items-center gap-2">
                 <div className="flex-1 min-w-0"><BookInfoCard book={b} compact /></div>
+                <Button variant="outline" size="icon" className="h-10 w-10 shrink-0" onClick={() => setEditBook(b)}>
+                  <Pencil className="h-4 w-4" />
+                </Button>
                 <AlertDialog>
                   <AlertDialogTrigger asChild>
                     <Button variant="destructive" size="icon" className="h-10 w-10 shrink-0"><Trash2 className="h-4 w-4" /></Button>
