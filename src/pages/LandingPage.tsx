@@ -42,7 +42,7 @@ export default function LandingPage() {
 
       {/* Hero */}
       <section className="max-w-4xl mx-auto px-4 pt-10 sm:pt-20 pb-10 sm:pb-16 text-center">
-        <img src={helvelittLogo} alt="HelveLitt" className="h-20 sm:h-28 mx-auto mb-4 sm:mb-6 object-contain" />
+        <img src={helvelittLogo} alt="HelveLitt" className="h-32 sm:h-40 mx-auto mb-4 sm:mb-6 object-contain mix-blend-multiply" />
         <p className="text-base sm:text-xl md:text-2xl font-medium text-primary italic mb-2 sm:mb-3 px-2">
           {t("landing.slogan")}
         </p>

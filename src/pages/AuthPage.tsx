@@ -48,7 +48,7 @@ export default function AuthPage() {
             </Link>
             <LanguageToggle />
           </div>
-          <img src={helvelittLogo} alt="HelveLitt" className="h-14 mx-auto object-contain" />
+          <img src={helvelittLogo} alt="HelveLitt" className="h-20 mx-auto object-contain mix-blend-multiply" />
           <p className="text-muted-foreground text-sm">
             {isLogin ? t("auth.signInSubtitle") : t("auth.signUpSubtitle")}
           </p>
