@@ -1,0 +1,1 @@
+ALTER TABLE public.books ADD COLUMN category text NOT NULL DEFAULT '';

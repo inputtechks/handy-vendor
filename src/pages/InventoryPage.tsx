@@ -48,6 +48,7 @@ export default function InventoryPage() {
       coverUrl: "",
       salePrice: p,
       quantity: q,
+      category: "",
     });
 
     setStage("added");

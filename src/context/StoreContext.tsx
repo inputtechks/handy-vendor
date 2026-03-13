@@ -93,7 +93,8 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
         cover_url: book.coverUrl,
         sale_price: book.salePrice,
         quantity: book.quantity,
-      });
+        category: book.category,
+      } as any);
       if (!error) {
         setBooks((prev) => [book, ...prev]);
       }
