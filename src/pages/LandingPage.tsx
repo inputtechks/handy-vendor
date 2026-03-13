@@ -26,7 +26,7 @@ export default function LandingPage() {
       <header className="sticky top-0 z-50 bg-background/95 backdrop-blur border-b border-border">
         <div className="max-w-5xl mx-auto flex items-center justify-between px-4 h-16">
           <div className="flex items-center gap-3">
-            <img src={helvelittLogo} alt="HelveLitt" className="h-9 w-9 object-contain" />
+            <img src={helvelittLogo} alt="HelveLitt" className="h-12 w-12 object-contain" />
             <span className="text-xl font-black tracking-tight text-foreground">HelveLitt</span>
           </div>
           <div className="flex items-center gap-3">
