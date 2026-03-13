@@ -17,7 +17,7 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
 
   const setLanguage = useCallback((lang: Language) => {
     setLanguageState(lang);
-    localStorage.setItem("bookbooth-lang", lang);
+    localStorage.setItem("helvelitt-lang", lang);
   }, []);
 
   const t = useCallback((key: string) => getTranslation(key, language), [language]);
