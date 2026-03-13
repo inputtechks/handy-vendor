@@ -51,11 +51,31 @@ export function BarcodeScanner({ onScan, active, cameraId }: BarcodeScannerProps
         if (cameraId) {
           await scanner.start(cameraId, config, onSuccess, () => {});
         } else {
+          // Fallback chain for devices that reject facingMode constraints (e.g. Huawei)
+          let started = false;
           try {
             await scanner.start({ facingMode: { exact: "environment" } }, config, onSuccess, () => {});
-          } catch {
-            await scanner.start({ facingMode: "environment" }, config, onSuccess, () => {});
+            started = true;
+          } catch {}
+          if (!started) {
+            try {
+              await scanner.start({ facingMode: "environment" }, config, onSuccess, () => {});
+              started = true;
+            } catch {}
           }
+          // Final fallback: enumerate devices and use first available camera
+          if (!started) {
+            try {
+              const devices = await navigator.mediaDevices.enumerateDevices();
+              const videoDevices = devices.filter((d) => d.kind === "videoinput");
+              if (videoDevices.length > 0) {
+                const fallbackId = videoDevices[videoDevices.length - 1].deviceId;
+                await scanner.start(fallbackId, config, onSuccess, () => {});
+                started = true;
+              }
+            } catch {}
+          }
+          if (!started) throw new Error("All camera start attempts failed");
         }
         if (cancelled) { scanner.stop().catch(() => {}); return; }
         running = true;
