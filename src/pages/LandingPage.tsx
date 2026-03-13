@@ -26,8 +26,7 @@ export default function LandingPage() {
       <header className="sticky top-0 z-50 bg-background/95 backdrop-blur border-b border-border">
         <div className="max-w-5xl mx-auto flex items-center justify-between px-3 sm:px-4 h-14 sm:h-16">
           <div className="flex items-center gap-2">
-            <img src={helvelittLogo} alt="HelveLitt" className="h-8 w-8 sm:h-12 sm:w-12 object-contain" />
-            <span className="text-base sm:text-xl font-black tracking-tight text-foreground hidden sm:inline">HelveLitt</span>
+            <img src={helvelittLogo} alt="HelveLitt" className="h-8 sm:h-10 object-contain" />
           </div>
           <div className="flex items-center gap-1.5 sm:gap-3">
             <LanguageToggle />
@@ -43,10 +42,7 @@ export default function LandingPage() {
 
       {/* Hero */}
       <section className="max-w-4xl mx-auto px-4 pt-10 sm:pt-20 pb-10 sm:pb-16 text-center">
-        <img src={helvelittLogo} alt="HelveLitt" className="h-16 w-16 sm:h-24 sm:w-24 mx-auto mb-4 sm:mb-6 object-contain" />
-        <h1 className="text-3xl sm:text-5xl md:text-6xl font-black tracking-tight text-foreground mb-3 sm:mb-4">
-          HelveLitt
-        </h1>
+        <img src={helvelittLogo} alt="HelveLitt" className="h-20 sm:h-28 mx-auto mb-4 sm:mb-6 object-contain" />
         <p className="text-base sm:text-xl md:text-2xl font-medium text-primary italic mb-2 sm:mb-3 px-2">
           {t("landing.slogan")}
         </p>
