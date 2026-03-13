@@ -50,6 +50,24 @@ export type Database = {
         }
         Relationships: []
       }
+      profiles: {
+        Row: {
+          created_at: string
+          id: string
+          is_approved: boolean
+        }
+        Insert: {
+          created_at?: string
+          id: string
+          is_approved?: boolean
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_approved?: boolean
+        }
+        Relationships: []
+      }
       sales: {
         Row: {
           discount: number
