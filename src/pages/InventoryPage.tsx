@@ -85,6 +85,17 @@ export default function InventoryPage() {
         <LanguageToggle />
       </header>
 
+      <div className="flex gap-2 mb-4">
+        <Button variant="outline" size="sm" onClick={() => downloadTemplate()} className="gap-1.5 flex-1">
+          <FileDown className="h-4 w-4" />
+          {t("bulk.downloadTemplate")}
+        </Button>
+        <Button variant="outline" size="sm" onClick={() => setImportOpen(true)} className="gap-1.5 flex-1">
+          <Upload className="h-4 w-4" />
+          {t("bulk.importExcel")}
+        </Button>
+      </div>
+
       <div className="relative mb-4">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
         <Input placeholder={t("inv.searchPlaceholder")} value={searchQuery} onChange={(e) => handleSearch(e.target.value)} className="pl-10 h-12 text-base bg-secondary border-border" />
