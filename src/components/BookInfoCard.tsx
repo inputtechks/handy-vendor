@@ -1,4 +1,5 @@
 import { Book } from "@/types/book";
+import { useLanguage } from "@/context/LanguageContext";
 
 interface BookInfoCardProps {
   book: Pick<Book, "title" | "author" | "coverUrl"> & { salePrice?: number; quantity?: number };
@@ -6,6 +7,8 @@ interface BookInfoCardProps {
 }
 
 export function BookInfoCard({ book, compact }: BookInfoCardProps) {
+  const { t } = useLanguage();
+
   return (
     <div className={`flex gap-4 rounded-lg bg-secondary p-4 ${compact ? "items-center" : "items-start"}`}>
       {book.coverUrl ? (
@@ -17,7 +20,7 @@ export function BookInfoCard({ book, compact }: BookInfoCardProps) {
         />
       ) : (
         <div className={`flex items-center justify-center rounded-md bg-muted text-muted-foreground text-xs font-bold ${compact ? "h-16 w-12" : "h-24 w-16"}`}>
-          No Cover
+          {t("book.noCover")}
         </div>
       )}
       <div className="flex-1 min-w-0">
@@ -28,7 +31,7 @@ export function BookInfoCard({ book, compact }: BookInfoCardProps) {
         )}
         {book.quantity !== undefined && (
           <p className={`text-sm font-medium mt-0.5 ${book.quantity <= 1 ? "text-warning" : "text-muted-foreground"}`}>
-            {book.quantity} in stock
+            {book.quantity} {t("book.inStock")}
           </p>
         )}
       </div>

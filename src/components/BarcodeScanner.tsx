@@ -2,11 +2,11 @@ import { useEffect, useRef, useState } from "react";
 import { Html5Qrcode } from "html5-qrcode";
 import { Button } from "@/components/ui/button";
 import { RefreshCw } from "lucide-react";
+import { useLanguage } from "@/context/LanguageContext";
 
 interface BarcodeScannerProps {
   onScan: (code: string) => void;
   active: boolean;
-  /** Preferred cameraId obtained from user gesture (iOS-safe). */
   cameraId?: string | null;
 }
 
@@ -15,6 +15,7 @@ export function BarcodeScanner({ onScan, active, cameraId }: BarcodeScannerProps
   const scannerRef = useRef<Html5Qrcode | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [retryKey, setRetryKey] = useState(0);
+  const { t } = useLanguage();
 
   useEffect(() => {
     if (!active || !containerRef.current) return;
@@ -37,54 +38,31 @@ export function BarcodeScanner({ onScan, active, cameraId }: BarcodeScannerProps
       onScan(decodedText);
     };
 
-    // Large responsive scan area — fills most of the viewfinder for easy positioning
     const qrboxFunction = (viewfinderWidth: number, viewfinderHeight: number) => {
       const w = Math.min(Math.floor(viewfinderWidth * 0.9), 400);
       const h = Math.min(Math.floor(viewfinderHeight * 0.7), 250);
       return { width: Math.max(w, 200), height: Math.max(h, 120) };
     };
 
-    const config = {
-      fps: 10,
-      qrbox: qrboxFunction,
-      disableFlip: false,
-      // No fixed aspectRatio — let the camera use its native resolution (better for portrait iPhones)
-    };
+    const config = { fps: 10, qrbox: qrboxFunction, disableFlip: false };
 
     const startScanner = async () => {
       try {
-        // Priority 1: Use cameraId from warm-up (most reliable on iOS)
         if (cameraId) {
           await scanner.start(cameraId, config, onSuccess, () => {});
         } else {
-          // Priority 2: facingMode with exact (works on most devices)
           try {
-            await scanner.start(
-              { facingMode: { exact: "environment" } },
-              config,
-              onSuccess,
-              () => {}
-            );
+            await scanner.start({ facingMode: { exact: "environment" } }, config, onSuccess, () => {});
           } catch {
-            // Priority 3: loose facingMode (fallback for front-only cameras)
-            await scanner.start(
-              { facingMode: "environment" },
-              config,
-              onSuccess,
-              () => {}
-            );
+            await scanner.start({ facingMode: "environment" }, config, onSuccess, () => {});
           }
         }
-
-        if (cancelled) {
-          scanner.stop().catch(() => {});
-          return;
-        }
+        if (cancelled) { scanner.stop().catch(() => {}); return; }
         running = true;
       } catch (err) {
         if (!cancelled) {
           console.error("Scanner error:", err);
-          setError("Camera unavailable. Please allow camera access and try again.");
+          setError(t("scanner.cameraUnavailable"));
         }
       }
     };
@@ -93,30 +71,20 @@ export function BarcodeScanner({ onScan, active, cameraId }: BarcodeScannerProps
 
     return () => {
       cancelled = true;
-      if (running) {
-        running = false;
-        scanner.stop().catch(() => {});
-      }
-      // Full cleanup to avoid stale DOM state
-      try {
-        scanner.clear();
-      } catch {}
+      if (running) { running = false; scanner.stop().catch(() => {}); }
+      try { scanner.clear(); } catch {}
       scannerRef.current = null;
     };
-  }, [active, cameraId, onScan, retryKey]);
+  }, [active, cameraId, onScan, retryKey, t]);
 
   const handleRetry = async () => {
     setError(null);
     try {
-      // Request camera from this click (user gesture for iOS)
-      const newStream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: "environment" },
-      });
-      newStream.getTracks().forEach((t) => t.stop());
-      // Bump retryKey to force a full scanner remount
+      const newStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
+      newStream.getTracks().forEach((tr) => tr.stop());
       setRetryKey((k) => k + 1);
     } catch {
-      setError("Camera access denied. Please check your browser settings.");
+      setError(t("scanner.cameraDenied"));
     }
   };
 
@@ -129,19 +97,13 @@ export function BarcodeScanner({ onScan, active, cameraId }: BarcodeScannerProps
           <p className="text-destructive text-sm font-medium">{error}</p>
           <Button variant="secondary" size="sm" onClick={handleRetry} className="gap-2">
             <RefreshCw className="h-4 w-4" />
-            Try Again
+            {t("scanner.tryAgain")}
           </Button>
         </div>
       ) : (
         <>
-          <div
-            ref={containerRef}
-            className="mx-auto w-full max-w-md overflow-hidden rounded-lg border-2 border-primary/30"
-            style={{ minHeight: "280px" }}
-          />
-          <p className="text-center text-xs text-muted-foreground">
-            Hold the barcode 15–25 cm from the camera
-          </p>
+          <div ref={containerRef} className="mx-auto w-full max-w-md overflow-hidden rounded-lg border-2 border-primary/30" style={{ minHeight: "280px" }} />
+          <p className="text-center text-xs text-muted-foreground">{t("scanner.hint")}</p>
         </>
       )}
     </div>
