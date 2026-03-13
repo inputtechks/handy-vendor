@@ -29,6 +29,7 @@ export default function InventoryPage() {
   const [qty, setQty] = useState("1");
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<typeof books>([]);
+  const [importOpen, setImportOpen] = useState(false);
 
   const handleScan = useCallback((code: string) => {
     setIsbn(code);
