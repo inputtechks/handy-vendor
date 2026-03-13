@@ -55,7 +55,8 @@ export function BarcodeScanner({ onScan, active, cameraId }: BarcodeScannerProps
     const scanner = new Html5Qrcode(scannerId, {
       formatsToSupport: BARCODE_FORMATS,
       experimentalFeatures: { useBarCodeDetectorIfSupported: true },
-    });
+      verbose: false,
+    } as any);
     scannerRef.current = scanner;
 
     let cancelled = false;
