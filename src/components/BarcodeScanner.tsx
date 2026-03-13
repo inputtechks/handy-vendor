@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Html5Qrcode } from "html5-qrcode";
+import { Html5Qrcode, Html5QrcodeSupportedFormats } from "html5-qrcode";
 import { Button } from "@/components/ui/button";
 import { RefreshCw } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
@@ -10,22 +10,25 @@ interface BarcodeScannerProps {
   cameraId?: string | null;
 }
 
-/** Apply continuous autofocus to the active video track when possible */
-function tryEnableAutofocus(scanner: Html5Qrcode) {
+const BARCODE_FORMATS = [
+  Html5QrcodeSupportedFormats.EAN_13,
+  Html5QrcodeSupportedFormats.EAN_8,
+  Html5QrcodeSupportedFormats.UPC_A,
+  Html5QrcodeSupportedFormats.UPC_E,
+  Html5QrcodeSupportedFormats.CODE_128,
+  Html5QrcodeSupportedFormats.CODE_39,
+  Html5QrcodeSupportedFormats.ITF,
+];
+
+/** Apply continuous autofocus to the active video track via container lookup */
+function tryEnableAutofocus(containerRef: React.RefObject<HTMLDivElement | null>) {
   try {
-    // @ts-ignore – internal access to running video element
-    const videoEl: HTMLVideoElement | undefined =
-      (scanner as any)?.getRunningTrackCameraCapabilities?.()?.track?.
-        // Alternative: grab from DOM
-        undefined ??
-      document.querySelector(`video`)
-    ;
-    const track = videoEl?.srcObject instanceof MediaStream
-      ? videoEl.srcObject.getVideoTracks()[0]
-      : undefined;
-
+    const videoEl = containerRef.current?.querySelector("video");
+    const track =
+      videoEl?.srcObject instanceof MediaStream
+        ? videoEl.srcObject.getVideoTracks()[0]
+        : undefined;
     if (!track) return;
-
     // @ts-ignore
     const caps = track.getCapabilities?.();
     // @ts-ignore
@@ -49,7 +52,10 @@ export function BarcodeScanner({ onScan, active, cameraId }: BarcodeScannerProps
     const scannerId = "barcode-scanner-" + Math.random().toString(36).slice(2);
     containerRef.current.id = scannerId;
 
-    const scanner = new Html5Qrcode(scannerId);
+    const scanner = new Html5Qrcode(scannerId, {
+      formatsToSupport: BARCODE_FORMATS,
+      experimentalFeatures: { useBarCodeDetectorIfSupported: true },
+    });
     scannerRef.current = scanner;
 
     let cancelled = false;
@@ -65,22 +71,20 @@ export function BarcodeScanner({ onScan, active, cameraId }: BarcodeScannerProps
     };
 
     const qrboxFunction = (viewfinderWidth: number, viewfinderHeight: number) => {
-      // Wide scan area for easier barcode targeting
-      const w = Math.min(Math.floor(viewfinderWidth * 0.92), 420);
-      const h = Math.min(Math.floor(viewfinderHeight * 0.55), 200);
-      return { width: Math.max(w, 220), height: Math.max(h, 100) };
+      const w = Math.floor(viewfinderWidth * 0.98);
+      const h = Math.floor(viewfinderHeight * 0.80);
+      return { width: Math.max(w, 250), height: Math.max(h, 150) };
     };
 
-    // Higher FPS + aspect ratio hint for sharper frames
     const config = {
-      fps: 15,
+      fps: 30,
       qrbox: qrboxFunction,
       disableFlip: false,
       aspectRatio: 16 / 9,
       videoConstraints: {
         facingMode: { ideal: "environment" },
-        width: { ideal: 1920, min: 1280 },
-        height: { ideal: 1080, min: 720 },
+        width: { ideal: 1920 },
+        height: { ideal: 1080 },
         // @ts-ignore
         focusMode: { ideal: "continuous" },
       },
@@ -89,59 +93,38 @@ export function BarcodeScanner({ onScan, active, cameraId }: BarcodeScannerProps
     const startScanner = async () => {
       try {
         if (cameraId) {
-          // When we have an explicit cameraId, pass resolution constraints via config
           await scanner.start(cameraId, config, onSuccess, () => {});
         } else {
           let started = false;
-
-          // Attempt 1: exact environment with HD
           try {
-            await scanner.start(
-              { facingMode: { exact: "environment" } },
-              config,
-              onSuccess,
-              () => {}
-            );
+            await scanner.start({ facingMode: { exact: "environment" } }, config, onSuccess, () => {});
             started = true;
           } catch {}
-
-          // Attempt 2: ideal environment
           if (!started) {
             try {
-              await scanner.start(
-                { facingMode: "environment" },
-                config,
-                onSuccess,
-                () => {}
-              );
+              await scanner.start({ facingMode: "environment" }, config, onSuccess, () => {});
               started = true;
             } catch {}
           }
-
-          // Attempt 3: enumerate and pick last (rear) camera
           if (!started) {
-            try {
-              const devices = await navigator.mediaDevices.enumerateDevices();
-              const videoDevices = devices.filter((d) => d.kind === "videoinput");
-              if (videoDevices.length > 0) {
-                const fallbackId = videoDevices[videoDevices.length - 1].deviceId;
-                await scanner.start(fallbackId, config, onSuccess, () => {});
-                started = true;
-              }
-            } catch {}
+            const devices = await navigator.mediaDevices.enumerateDevices();
+            const videoDevices = devices.filter((d) => d.kind === "videoinput");
+            if (videoDevices.length > 0) {
+              await scanner.start(videoDevices[videoDevices.length - 1].deviceId, config, onSuccess, () => {});
+              started = true;
+            }
           }
-
           if (!started) throw new Error("All camera start attempts failed");
         }
 
-        if (cancelled) {
-          scanner.stop().catch(() => {});
-          return;
-        }
+        if (cancelled) { scanner.stop().catch(() => {}); return; }
         running = true;
 
-        // Post-start: force continuous autofocus on the live track
-        setTimeout(() => tryEnableAutofocus(scanner), 500);
+        // Multi-interval autofocus for iOS Safari
+        const timers = [500, 1500, 3000].map((ms) =>
+          setTimeout(() => tryEnableAutofocus(containerRef), ms)
+        );
+        return () => timers.forEach(clearTimeout);
       } catch (err) {
         if (!cancelled) {
           console.error("Scanner error:", err);
@@ -150,14 +133,12 @@ export function BarcodeScanner({ onScan, active, cameraId }: BarcodeScannerProps
       }
     };
 
-    startScanner();
+    const cleanupPromise = startScanner();
 
     return () => {
       cancelled = true;
-      if (running) {
-        running = false;
-        scanner.stop().catch(() => {});
-      }
+      cleanupPromise?.then((cleanup) => cleanup?.());
+      if (running) { running = false; scanner.stop().catch(() => {}); }
       try { scanner.clear(); } catch {}
       scannerRef.current = null;
     };
@@ -166,9 +147,7 @@ export function BarcodeScanner({ onScan, active, cameraId }: BarcodeScannerProps
   const handleRetry = async () => {
     setError(null);
     try {
-      const newStream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: "environment" },
-      });
+      const newStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
       newStream.getTracks().forEach((tr) => tr.stop());
       setRetryKey((k) => k + 1);
     } catch {
