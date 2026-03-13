@@ -1,11 +1,11 @@
 import { NavLink } from "react-router-dom";
-import { Package, ShoppingCart, BarChart3, ArrowRightLeft, Shield } from "lucide-react";
+import { Package, ShoppingCart, BarChart3, ArrowRightLeft, Shield, LogOut } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
 import { useAuth } from "@/context/AuthContext";
 
 export function BottomNav() {
   const { t } = useLanguage();
-  const { isAdmin } = useAuth();
+  const { isAdmin, signOut } = useAuth();
 
   const linkClass = ({ isActive }: { isActive: boolean }) =>
     `flex flex-col items-center gap-1 py-2 px-3 rounded-lg transition-colors touch-target ${
@@ -37,6 +37,13 @@ export function BottomNav() {
             <span className="text-[10px] font-bold">Admin</span>
           </NavLink>
         )}
+        <button
+          onClick={() => void signOut()}
+          className="flex flex-col items-center gap-1 py-2 px-3 rounded-lg transition-colors touch-target text-muted-foreground hover:text-destructive"
+        >
+          <LogOut className="h-5 w-5" />
+          <span className="text-[10px] font-bold">{t("nav.logout") ?? "Logout"}</span>
+        </button>
       </div>
     </nav>
   );
