@@ -17,6 +17,7 @@ import { useCameraStream } from "@/hooks/useCameraStream";
 interface CartItem {
   book: Book;
   qty: number;
+  discountPct: number; // 0–100
 }
 
 type Stage = "idle" | "scanning" | "checkout" | "cash-change" | "done" | "error";
