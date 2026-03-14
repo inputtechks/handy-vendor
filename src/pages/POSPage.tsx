@@ -150,7 +150,8 @@ export default function POSPage() {
     setProcessing(true);
     let allOk = true;
     for (const item of cart) {
-      const sale = await sellBook(item.book.isbn, method, item.qty, 0, "retail");
+      const discountPerUnit = item.book.salePrice * (item.discountPct / 100);
+      const sale = await sellBook(item.book.isbn, method, item.qty, discountPerUnit, "retail");
       if (!sale) {
         allOk = false;
         toast.error(`Failed: ${item.book.title}`);
