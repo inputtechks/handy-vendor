@@ -331,9 +331,31 @@ export default function POSPage() {
                   <div className="flex-1 min-w-0">
                     <p className="font-bold text-sm truncate">{item.book.title}</p>
                     <p className="text-xs text-muted-foreground truncate">{item.book.author}</p>
-                    <p className="text-sm font-black text-primary mt-0.5">
-                      CHF {(item.book.salePrice * item.qty).toFixed(2)}
-                    </p>
+                    <div className="flex items-center gap-2 mt-0.5">
+                      {item.discountPct > 0 && (
+                        <span className="text-xs text-muted-foreground line-through">
+                          CHF {(item.book.salePrice * item.qty).toFixed(2)}
+                        </span>
+                      )}
+                      <span className="text-sm font-black text-primary">
+                        CHF {itemTotal(item).toFixed(2)}
+                      </span>
+                    </div>
+                    {/* Discount input */}
+                    <div className="flex items-center gap-1 mt-1">
+                      <Percent className="h-3 w-3 text-muted-foreground" />
+                      <Input
+                        type="number"
+                        min="0"
+                        max="100"
+                        step="5"
+                        value={item.discountPct || ""}
+                        placeholder="0"
+                        onChange={(e) => updateDiscount(item.book.isbn, parseFloat(e.target.value) || 0)}
+                        className="h-7 w-16 text-xs text-center bg-secondary border-border px-1"
+                      />
+                      <span className="text-xs text-muted-foreground">{t("pos.discount")}</span>
+                    </div>
                   </div>
 
                   {/* Quantity controls */}

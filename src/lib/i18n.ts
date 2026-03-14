@@ -79,7 +79,7 @@ const translations: Record<string, Record<Language, string>> = {
   "pos.searchPlaceholder": { en: "Search book by name...", de: "Buch nach Name suchen...", fr: "Chercher un livre par nom..." },
   "pos.scanToSell": { en: "SCAN TO SELL", de: "SCANNEN ZUM VERKAUFEN", fr: "SCANNER POUR VENDRE" },
   "pos.available": { en: "available", de: "verfügbar", fr: "disponible(s)" },
-  "pos.discount": { en: "Discount (CHF)", de: "Rabatt (CHF)", fr: "Remise (CHF)" },
+  "pos.discount": { en: "discount", de: "Rabatt", fr: "remise" },
   "pos.cash": { en: "CASH", de: "BAR", fr: "ESPÈCES" },
   "pos.card": { en: "CARD", de: "KARTE", fr: "CARTE" },
   "pos.twint": { en: "TWINT", de: "TWINT", fr: "TWINT" },
