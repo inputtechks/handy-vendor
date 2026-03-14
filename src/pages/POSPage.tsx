@@ -88,6 +88,13 @@ export default function POSPage() {
     setCart((prev) => prev.filter((i) => i.book.isbn !== isbn));
   }, []);
 
+  const updateDiscount = useCallback((isbn: string, pct: number) => {
+    const clamped = Math.min(100, Math.max(0, pct));
+    setCart((prev) =>
+      prev.map((i) => (i.book.isbn === isbn ? { ...i, discountPct: clamped } : i))
+    );
+  }, []);
+
   // --- Scan handler: add to cart & keep scanning ---
   const handleScan = useCallback(
     (code: string) => {
