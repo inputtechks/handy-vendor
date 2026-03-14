@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
   ScanBarcode, Search, Banknote, CreditCard, Check, XCircle,
-  Minus, Plus, Smartphone, Trash2, ShoppingCart,
+  Minus, Plus, Smartphone, Trash2, ShoppingCart, Percent,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
