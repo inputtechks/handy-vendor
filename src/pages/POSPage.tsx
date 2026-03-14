@@ -64,7 +64,7 @@ export default function POSPage() {
         toast.error(`"${book.title}" ${t("pos.outOfStock")}`);
         return prev;
       }
-      return [...prev, { book, qty: 1 }];
+      return [...prev, { book, qty: 1, discountPct: 0 }];
     });
   }, [t]);
 
