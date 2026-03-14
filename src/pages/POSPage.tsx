@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
   ScanBarcode, Search, Banknote, CreditCard, Check, XCircle,
-  Minus, Plus, Smartphone, Trash2, ShoppingCart,
+  Minus, Plus, Smartphone, Trash2, ShoppingCart, Percent,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
@@ -17,6 +17,7 @@ import { useCameraStream } from "@/hooks/useCameraStream";
 interface CartItem {
   book: Book;
   qty: number;
+  discountPct: number; // 0–100
 }
 
 type Stage = "idle" | "scanning" | "checkout" | "cash-change" | "done" | "error";
@@ -36,8 +37,13 @@ export default function POSPage() {
   const [changeAmount, setChangeAmount] = useState<number | null>(null);
   const [processing, setProcessing] = useState(false);
 
+  const itemTotal = (item: CartItem) => {
+    const discounted = item.book.salePrice * (1 - item.discountPct / 100);
+    return Math.max(0, discounted * item.qty);
+  };
+
   const subtotal = useMemo(
-    () => cart.reduce((sum, item) => sum + item.book.salePrice * item.qty, 0),
+    () => cart.reduce((sum, item) => sum + itemTotal(item), 0),
     [cart]
   );
 
@@ -58,7 +64,7 @@ export default function POSPage() {
         toast.error(`"${book.title}" ${t("pos.outOfStock")}`);
         return prev;
       }
-      return [...prev, { book, qty: 1 }];
+      return [...prev, { book, qty: 1, discountPct: 0 }];
     });
   }, [t]);
 
@@ -80,6 +86,13 @@ export default function POSPage() {
 
   const removeFromCart = useCallback((isbn: string) => {
     setCart((prev) => prev.filter((i) => i.book.isbn !== isbn));
+  }, []);
+
+  const updateDiscount = useCallback((isbn: string, pct: number) => {
+    const clamped = Math.min(100, Math.max(0, pct));
+    setCart((prev) =>
+      prev.map((i) => (i.book.isbn === isbn ? { ...i, discountPct: clamped } : i))
+    );
   }, []);
 
   // --- Scan handler: add to cart & keep scanning ---
@@ -137,7 +150,8 @@ export default function POSPage() {
     setProcessing(true);
     let allOk = true;
     for (const item of cart) {
-      const sale = await sellBook(item.book.isbn, method, item.qty, 0, "retail");
+      const discountPerUnit = item.book.salePrice * (item.discountPct / 100);
+      const sale = await sellBook(item.book.isbn, method, item.qty, discountPerUnit, "retail");
       if (!sale) {
         allOk = false;
         toast.error(`Failed: ${item.book.title}`);
@@ -317,9 +331,31 @@ export default function POSPage() {
                   <div className="flex-1 min-w-0">
                     <p className="font-bold text-sm truncate">{item.book.title}</p>
                     <p className="text-xs text-muted-foreground truncate">{item.book.author}</p>
-                    <p className="text-sm font-black text-primary mt-0.5">
-                      CHF {(item.book.salePrice * item.qty).toFixed(2)}
-                    </p>
+                    <div className="flex items-center gap-2 mt-0.5">
+                      {item.discountPct > 0 && (
+                        <span className="text-xs text-muted-foreground line-through">
+                          CHF {(item.book.salePrice * item.qty).toFixed(2)}
+                        </span>
+                      )}
+                      <span className="text-sm font-black text-primary">
+                        CHF {itemTotal(item).toFixed(2)}
+                      </span>
+                    </div>
+                    {/* Discount input */}
+                    <div className="flex items-center gap-1 mt-1">
+                      <Percent className="h-3 w-3 text-muted-foreground" />
+                      <Input
+                        type="number"
+                        min="0"
+                        max="100"
+                        step="5"
+                        value={item.discountPct || ""}
+                        placeholder="0"
+                        onChange={(e) => updateDiscount(item.book.isbn, parseFloat(e.target.value) || 0)}
+                        className="h-7 w-16 text-xs text-center bg-secondary border-border px-1"
+                      />
+                      <span className="text-xs text-muted-foreground">{t("pos.discount")}</span>
+                    </div>
                   </div>
 
                   {/* Quantity controls */}
