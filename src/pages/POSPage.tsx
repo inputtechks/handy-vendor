@@ -37,8 +37,13 @@ export default function POSPage() {
   const [changeAmount, setChangeAmount] = useState<number | null>(null);
   const [processing, setProcessing] = useState(false);
 
+  const itemTotal = (item: CartItem) => {
+    const discounted = item.book.salePrice * (1 - item.discountPct / 100);
+    return Math.max(0, discounted * item.qty);
+  };
+
   const subtotal = useMemo(
-    () => cart.reduce((sum, item) => sum + item.book.salePrice * item.qty, 0),
+    () => cart.reduce((sum, item) => sum + itemTotal(item), 0),
     [cart]
   );
 
