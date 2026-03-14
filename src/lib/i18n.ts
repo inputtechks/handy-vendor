@@ -92,6 +92,12 @@ const translations: Record<string, Record<Language, string>> = {
   "pos.paymentRecorded": { en: "Payment recorded", de: "Zahlung erfasst", fr: "Paiement enregistré" },
   "pos.outOfStock": { en: "is out of stock!", de: "ist nicht auf Lager!", fr: "est en rupture de stock !" },
   "pos.notFound": { en: "Book not found in inventory. Please add it first.", de: "Buch nicht im Inventar gefunden. Bitte zuerst im Inventar hinzufügen.", fr: "Livre non trouvé. Veuillez d'abord l'ajouter à l'inventaire." },
+  "pos.addedToCart": { en: "added to cart", de: "zum Warenkorb hinzugefügt", fr: "ajouté au panier" },
+  "pos.cart": { en: "Cart", de: "Warenkorb", fr: "Panier" },
+  "pos.subtotal": { en: "Total", de: "Gesamt", fr: "Total" },
+  "pos.scanNext": { en: "SCAN NEXT BOOK", de: "NÄCHSTES BUCH SCANNEN", fr: "SCANNER LE SUIVANT" },
+  "pos.stopScanning": { en: "Stop Scanning", de: "Scannen beenden", fr: "Arrêter le scan" },
+  "pos.maxStock": { en: "Maximum stock reached", de: "Maximaler Bestand erreicht", fr: "Stock maximum atteint" },
 
   // Movements
   "mov.title": { en: "Movements", de: "Bewegungen", fr: "Mouvements" },
