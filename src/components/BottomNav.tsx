@@ -1,5 +1,5 @@
 import { NavLink } from "react-router-dom";
-import { Package, ShoppingCart, BarChart3, ArrowRightLeft, Shield, LogOut, FileText } from "lucide-react";
+import { Package, ShoppingCart, BarChart3, ArrowRightLeft, Shield, LogOut } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
 import { useAuth } from "@/context/AuthContext";
 
