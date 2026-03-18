@@ -173,6 +173,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
         price: finalPrice,
         method,
         discount,
+        quantity: qty,
         timestamp: new Date(data.sold_at).getTime(),
         transactionType,
         note,
