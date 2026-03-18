@@ -12,6 +12,7 @@ import InventoryPage from "@/pages/InventoryPage";
 import POSPage from "@/pages/POSPage";
 import MovementsPage from "@/pages/MovementsPage";
 import DashboardPage from "@/pages/DashboardPage";
+import ReportsPage from "@/pages/ReportsPage";
 import AuthPage from "@/pages/AuthPage";
 import VerificationPage from "@/pages/VerificationPage";
 import AdminPage from "@/pages/AdminPage";
