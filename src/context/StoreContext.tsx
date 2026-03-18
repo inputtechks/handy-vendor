@@ -111,6 +111,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     if (updates.coverUrl !== undefined) dbUpdates.cover_url = updates.coverUrl;
     if (updates.salePrice !== undefined) dbUpdates.sale_price = updates.salePrice;
     if (updates.quantity !== undefined) dbUpdates.quantity = updates.quantity;
+    if (updates.royaltyPercentage !== undefined) dbUpdates.royalty_percentage = updates.royaltyPercentage;
 
     const { error } = await supabase.from("books").update(dbUpdates).eq("vendor_id", user.id).eq("isbn", isbn);
     if (!error) {

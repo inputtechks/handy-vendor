@@ -6,6 +6,7 @@ export interface Book {
   salePrice: number;
   quantity: number;
   category: string;
+  royaltyPercentage: number;
 }
 
 export type TransactionType =
