@@ -12,6 +12,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
 import { exportSalesToCSV, exportRevenueByCategoryCSV } from "@/lib/exportSales";
 import { REVENUE_TYPES, ZERO_REVENUE_TYPES } from "@/types/book";
 import type { Sale, TransactionType } from "@/types/book";
