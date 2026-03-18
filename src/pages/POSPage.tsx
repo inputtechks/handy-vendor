@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
   ScanBarcode, Search, Banknote, CreditCard, Check, XCircle,
-  Minus, Plus, Smartphone, Trash2, ShoppingCart, Percent, CloudOff,
+  Minus, Plus, Smartphone, Trash2, ShoppingCart, Percent, CloudOff, RefreshCw,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
@@ -42,11 +42,37 @@ export default function POSPage() {
   const [changeAmount, setChangeAmount] = useState<number | null>(null);
   const [processing, setProcessing] = useState(false);
   const [pendingCount, setPendingCount] = useState(0);
+  const [syncing, setSyncing] = useState(false);
 
   // Check pending offline sales count on mount & after sync
   useState(() => {
     getPendingSales().then((s) => setPendingCount(s.length)).catch(() => {});
   });
+
+  // Auto-sync when coming back online
+  const prevOnlineRef = useState({ current: isOnline })[0];
+  useState(() => {
+    if (isOnline && !prevOnlineRef.current) {
+      handleSyncNow();
+    }
+    prevOnlineRef.current = isOnline;
+  });
+
+  const handleSyncNow = async () => {
+    if (syncing || !isOnline) return;
+    setSyncing(true);
+    try {
+      const count = await syncOfflineSales();
+      if (count > 0) {
+        toast.success(`Synced ${count} offline sale(s)`);
+      }
+      const remaining = await getPendingSales();
+      setPendingCount(remaining.length);
+    } catch {
+      toast.error("Sync failed, will retry later");
+    }
+    setSyncing(false);
+  };
 
   const itemTotal = (item: CartItem) => {
     const discounted = item.book.salePrice * (1 - item.discountPct / 100);
@@ -106,23 +132,21 @@ export default function POSPage() {
     );
   }, []);
 
-  // --- Scan handler: add to cart & keep scanning ---
+  // --- Scan handler: add to cart & close camera ---
   const handleScan = useCallback(
     (code: string) => {
       const book = getBook(code);
       if (book) {
         addToCart(book);
         toast.success(`${book.title} ${t("pos.addedToCart")}`);
-        // Scanner will re-mount because key changes via retryKey internally,
-        // but we stay in scanning stage for continuous scanning
       } else {
         toast.error(t("pos.notFound"));
       }
-      // Re-activate scanner for next scan
+      // Close camera after scan — user presses "Scan Another" to reopen
       setStage("idle");
-      setTimeout(() => handleStartScan(), 300);
+      resetCamera();
     },
-    [getBook, addToCart, t]
+    [getBook, addToCart, t, resetCamera]
   );
 
   const handleSearchSelect = (book: Book) => {
@@ -233,9 +257,21 @@ export default function POSPage() {
           <h1 className="text-2xl font-black tracking-tight">{t("pos.title")}</h1>
           <div className="flex items-center gap-3">
             {pendingCount > 0 && (
-              <div className="flex items-center gap-1 text-xs font-semibold text-warning bg-warning/10 px-2 py-1 rounded-full">
-                <CloudOff className="h-3.5 w-3.5" />
-                <span>{pendingCount} pending</span>
+              <div className="flex items-center gap-1.5">
+                <div className="flex items-center gap-1 text-xs font-semibold text-warning bg-warning/10 px-2 py-1 rounded-full">
+                  <CloudOff className="h-3.5 w-3.5" />
+                  <span>{pendingCount} pending</span>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-7 w-7 rounded-full"
+                  onClick={handleSyncNow}
+                  disabled={syncing || !isOnline}
+                  title="Sync now"
+                >
+                  <RefreshCw className={`h-3.5 w-3.5 ${syncing ? "animate-spin" : ""}`} />
+                </Button>
               </div>
             )}
             {cart.length > 0 && (
