@@ -27,8 +27,10 @@ type Stage = "idle" | "scanning" | "checkout" | "cash-change" | "done" | "error"
 
 export default function POSPage() {
   const { getBook, sellBook, searchBooks } = useStore();
+  const { user } = useAuth();
   const { cameraId, requestCamera, reset: resetCamera } = useCameraStream();
   const { t } = useLanguage();
+  const isOnline = useOnlineStatus();
 
   const [stage, setStage] = useState<Stage>("idle");
   const [cart, setCart] = useState<CartItem[]>([]);
@@ -39,6 +41,12 @@ export default function POSPage() {
   const [amountReceived, setAmountReceived] = useState("");
   const [changeAmount, setChangeAmount] = useState<number | null>(null);
   const [processing, setProcessing] = useState(false);
+  const [pendingCount, setPendingCount] = useState(0);
+
+  // Check pending offline sales count on mount & after sync
+  useState(() => {
+    getPendingSales().then((s) => setPendingCount(s.length)).catch(() => {});
+  });
 
   const itemTotal = (item: CartItem) => {
     const discounted = item.book.salePrice * (1 - item.discountPct / 100);
