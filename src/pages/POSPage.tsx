@@ -231,12 +231,20 @@ export default function POSPage() {
       <header className="sticky top-0 z-20 bg-background/95 backdrop-blur border-b border-border px-4 py-3">
         <div className="flex items-center justify-between">
           <h1 className="text-2xl font-black tracking-tight">{t("pos.title")}</h1>
-          {cart.length > 0 && (
-            <div className="flex items-center gap-2 text-sm font-bold text-muted-foreground">
-              <ShoppingCart className="h-5 w-5" />
-              <span>{cart.reduce((s, i) => s + i.qty, 0)}</span>
-            </div>
-          )}
+          <div className="flex items-center gap-3">
+            {pendingCount > 0 && (
+              <div className="flex items-center gap-1 text-xs font-semibold text-warning bg-warning/10 px-2 py-1 rounded-full">
+                <CloudOff className="h-3.5 w-3.5" />
+                <span>{pendingCount} pending</span>
+              </div>
+            )}
+            {cart.length > 0 && (
+              <div className="flex items-center gap-2 text-sm font-bold text-muted-foreground">
+                <ShoppingCart className="h-5 w-5" />
+                <span>{cart.reduce((s, i) => s + i.qty, 0)}</span>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Search bar */}
