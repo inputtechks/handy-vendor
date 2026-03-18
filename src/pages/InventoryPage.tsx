@@ -154,8 +154,11 @@ export default function InventoryPage() {
                 <label className="text-sm font-semibold text-muted-foreground mb-1 block">{t("inv.author")}</label>
                 <Input placeholder={t("inv.enterAuthor")} value={editAuthor} onChange={(e) => setEditAuthor(e.target.value)} className="h-12 text-base bg-secondary" />
               </div>
+              <div>
+                <label className="text-sm font-semibold text-muted-foreground mb-1 block">{t("inv.royaltyPct")}</label>
+                <Input type="number" step="0.1" min="0" max="100" placeholder="0" value={royalty} onChange={(e) => setRoyalty(e.target.value)} className="h-12 text-base bg-secondary" />
+              </div>
             </div>
-            <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className="text-sm font-semibold text-muted-foreground mb-1 block">{t("inv.salePrice")}</label>
                 <Input type="number" step="0.01" min="0" placeholder="0.00" value={price} onChange={(e) => setPrice(e.target.value)} className="h-14 text-xl font-bold bg-secondary text-center" />

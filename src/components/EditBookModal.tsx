@@ -83,6 +83,10 @@ export function EditBookModal({ book, open, onOpenChange }: EditBookModalProps) 
               <label className="text-sm font-semibold text-muted-foreground mb-1 block">{t("inv.quantity")}</label>
               <Input type="number" min="0" value={quantity} onChange={(e) => setQuantity(e.target.value)} className="h-11 text-lg font-bold bg-secondary text-center" />
             </div>
+            <div>
+              <label className="text-sm font-semibold text-muted-foreground mb-1 block">{t("inv.royaltyPct")}</label>
+              <Input type="number" step="0.1" min="0" max="100" value={royalty} onChange={(e) => setRoyalty(e.target.value)} className="h-11 text-lg font-bold bg-secondary text-center" />
+            </div>
           </div>
         </div>
         <DialogFooter>
