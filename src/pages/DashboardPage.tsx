@@ -275,7 +275,19 @@ function ReportsSection({ books, sales, t }: { books: any[]; sales: Sale[]; t: (
   ];
 
   /* ─── Aggregated Transactions ─── */
-  const periodRange = useMemo(() => getPeriodRange(txPeriod), [txPeriod]);
+  const periodRange = useMemo(() => {
+    if (txPeriod === "custom") {
+      const label = customFrom && customTo
+        ? `${format(customFrom, "dd/MM/yyyy")} – ${format(customTo, "dd/MM/yyyy")}`
+        : customFrom
+          ? `${format(customFrom, "dd/MM/yyyy")} – …`
+          : customTo
+            ? `… – ${format(customTo, "dd/MM/yyyy")}`
+            : t("reports.custom");
+      return { from: customFrom ? startOfDay(customFrom) : undefined, to: customTo ? endOfDay(customTo) : undefined, label };
+    }
+    return getPeriodRange(txPeriod);
+  }, [txPeriod, customFrom, customTo, t]);
 
   const periodSales = useMemo(() => {
     const revSales = sales.filter((s) => REVENUE_TYPES.includes(s.transactionType));
