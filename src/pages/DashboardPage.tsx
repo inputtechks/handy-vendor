@@ -3,8 +3,8 @@ import { useStore } from "@/context/StoreContext";
 import { useAuth } from "@/context/AuthContext";
 import { useLanguage } from "@/context/LanguageContext";
 import { LanguageToggle } from "@/components/LanguageToggle";
-import { format, startOfDay, endOfDay } from "date-fns";
-import { DollarSign, Banknote, CreditCard, Smartphone, AlertTriangle, Download, LogOut, ArrowRightLeft, CalendarIcon, X, BookOpen } from "lucide-react";
+import { format, startOfDay, endOfDay, startOfWeek, endOfWeek, startOfMonth, endOfMonth } from "date-fns";
+import { DollarSign, Banknote, CreditCard, Smartphone, AlertTriangle, Download, LogOut, ArrowRightLeft, CalendarIcon, X, BookOpen, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Calendar } from "@/components/ui/calendar";
@@ -12,7 +12,8 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { exportSalesToCSV, exportRevenueByCategoryCSV } from "@/lib/exportSales";
+import { Input } from "@/components/ui/input";
+import { exportRevenueByCategoryCSV } from "@/lib/exportSales";
 import { REVENUE_TYPES, ZERO_REVENUE_TYPES } from "@/types/book";
 import type { Sale, TransactionType } from "@/types/book";
 import { cn } from "@/lib/utils";
@@ -77,11 +78,8 @@ export default function DashboardPage() {
 
   const [revFrom, setRevFrom] = useState<Date | undefined>();
   const [revTo, setRevTo] = useState<Date | undefined>();
-  const [txFrom, setTxFrom] = useState<Date | undefined>();
-  const [txTo, setTxTo] = useState<Date | undefined>();
 
   const revFilteredSales = useMemo(() => filterByDate(sales, revFrom, revTo), [sales, revFrom, revTo]);
-  const txFilteredSales = useMemo(() => filterByDate(sales, txFrom, txTo), [sales, txFrom, txTo]);
 
   const revenueSales = revFilteredSales.filter((s) => REVENUE_TYPES.includes(s.transactionType));
   const adjustments = revFilteredSales.filter((s) => ZERO_REVENUE_TYPES.includes(s.transactionType));
@@ -101,13 +99,6 @@ export default function DashboardPage() {
     acc[type] = adjustments.filter((s) => s.transactionType === type).length;
     return acc;
   }, {} as Record<string, number>);
-
-  const methodBadge = (method: string) => {
-    if (method === "cash") return "bg-cash/20 text-cash";
-    if (method === "twint") return "bg-twint/20 text-twint";
-    if (method === "none") return "bg-muted text-muted-foreground";
-    return "bg-card-pay/20 text-card-pay";
-  };
 
   return (
     <div className="min-h-screen bg-background p-4 pb-24">
@@ -219,55 +210,32 @@ export default function DashboardPage() {
         </div>
       )}
 
-      {/* Transactions */}
-      <div className="mb-6">
-        <div className="flex items-center justify-between mb-2">
-          <h2 className="text-lg font-bold">{t("dash.transactions")} ({txFilteredSales.length})</h2>
-          {txFilteredSales.length > 0 && (
-            <Button variant="secondary" size="sm" className="gap-2 text-xs h-7" onClick={() => exportSalesToCSV(txFilteredSales)}>
-              <Download className="h-3 w-3" /> {t("dash.csv")}
-            </Button>
-          )}
-        </div>
-        <div className="mb-3">
-          <DateRangePicker dateFrom={txFrom} dateTo={txTo} onFromChange={setTxFrom} onToChange={setTxTo}
-            onClear={() => { setTxFrom(undefined); setTxTo(undefined); }} fromLabel={t("dash.from")} toLabel={t("dash.to")} />
-        </div>
-        {txFilteredSales.length === 0 ? (
-          <p className="text-muted-foreground text-center py-8">
-            {(txFrom || txTo) ? t("dash.noTransactionsForDates") : t("dash.noTransactionsYet")}
-          </p>
-        ) : (
-          <div className="space-y-2">
-            {txFilteredSales.slice(0, 50).map((s) => (
-              <div key={s.id} className="flex items-center justify-between rounded-lg bg-secondary p-3">
-                <div className="min-w-0 flex-1">
-                  <p className="font-semibold truncate text-sm">{s.title}</p>
-                  <div className="flex items-center gap-2 mt-0.5">
-                    <span className="text-xs text-muted-foreground">{t(`tx.${s.transactionType}`)}</span>
-                    {s.note && <span className="text-xs text-muted-foreground">· {s.note}</span>}
-                  </div>
-                  <p className="text-xs text-muted-foreground">{format(new Date(s.timestamp), "dd/MM/yy h:mm a")}</p>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${methodBadge(s.method)}`}>
-                    {s.method === "none" ? "—" : s.method.toUpperCase()}
-                  </span>
-                  <span className="font-bold">{s.price > 0 ? `CHF ${s.price.toFixed(2)}` : "CHF 0"}</span>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-
-      {/* --- Detailed Reports Section --- */}
-      <RoyaltiesAndStockReports books={books} sales={sales} t={t} />
+      {/* --- Reports Section (Transactions + Royalties + Stock) --- */}
+      <ReportsSection books={books} sales={sales} t={t} />
     </div>
   );
 }
 
-/* ─── Royalties & Stock Reports (inline) ─── */
+/* ─── Period helpers ─── */
+type PeriodType = "daily" | "weekly" | "monthly" | "all";
+
+function getPeriodRange(period: PeriodType): { from?: Date; to?: Date; label: string } {
+  const now = new Date();
+  switch (period) {
+    case "daily":
+      return { from: startOfDay(now), to: endOfDay(now), label: format(now, "dd/MM/yyyy") };
+    case "weekly":
+      return {
+        from: startOfWeek(now, { weekStartsOn: 1 }),
+        to: endOfWeek(now, { weekStartsOn: 1 }),
+        label: `${format(startOfWeek(now, { weekStartsOn: 1 }), "dd/MM")} – ${format(endOfWeek(now, { weekStartsOn: 1 }), "dd/MM/yyyy")}`,
+      };
+    case "monthly":
+      return { from: startOfMonth(now), to: endOfMonth(now), label: format(now, "MMMM yyyy") };
+    default:
+      return { label: "All Time" };
+  }
+}
 
 function downloadCSV(csv: string, filename: string) {
   const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
@@ -279,8 +247,22 @@ function downloadCSV(csv: string, filename: string) {
   URL.revokeObjectURL(url);
 }
 
-function RoyaltiesAndStockReports({ books, sales, t }: { books: any[]; sales: Sale[]; t: (k: string) => string }) {
+interface AggregatedRow {
+  isbn: string;
+  title: string;
+  author: string;
+  unitPrice: number;
+  unitsSold: number;
+  grossRevenue: number;
+  royaltyPct: number;
+  authorRoyalty: number;
+  netRevenue: number;
+}
+
+function ReportsSection({ books, sales, t }: { books: any[]; sales: Sale[]; t: (k: string) => string }) {
   const [categoryFilter, setCategoryFilter] = useState<string>("all");
+  const [txPeriod, setTxPeriod] = useState<PeriodType>("all");
+  const [txSearch, setTxSearch] = useState("");
 
   const stockCategories: { type: TransactionType; label: string }[] = [
     { type: "pilon", label: t("tx.pilon") },
@@ -290,33 +272,88 @@ function RoyaltiesAndStockReports({ books, sales, t }: { books: any[]; sales: Sa
     { type: "depot_sold", label: t("tx.depot_sold") },
   ];
 
+  /* ─── Aggregated Transactions ─── */
+  const periodRange = useMemo(() => getPeriodRange(txPeriod), [txPeriod]);
+
+  const periodSales = useMemo(() => {
+    const revSales = sales.filter((s) => REVENUE_TYPES.includes(s.transactionType));
+    if (!periodRange.from || !periodRange.to) return revSales;
+    return revSales.filter((s) => {
+      const d = new Date(s.timestamp);
+      return d >= periodRange.from! && d <= periodRange.to!;
+    });
+  }, [sales, periodRange]);
+
+  const aggregatedRows = useMemo((): AggregatedRow[] => {
+    const grouped: Record<string, { sales: Sale[]; book: any }> = {};
+    for (const s of periodSales) {
+      if (!grouped[s.isbn]) {
+        const book = books.find((b: any) => b.isbn === s.isbn);
+        grouped[s.isbn] = { sales: [], book };
+      }
+      grouped[s.isbn].sales.push(s);
+    }
+
+    return Object.entries(grouped).map(([isbn, { sales: bookSales, book }]) => {
+      const unitsSold = bookSales.length;
+      const unitPrice = book?.salePrice ?? (bookSales[0]?.price || 0);
+      const grossRevenue = bookSales.reduce((sum, s) => sum + s.price, 0);
+      const royaltyPct = book?.royaltyPercentage ?? 0;
+      const authorRoyalty = grossRevenue * (royaltyPct / 100);
+      const netRevenue = grossRevenue - authorRoyalty;
+
+      return { isbn, title: book?.title ?? bookSales[0]?.title ?? isbn, author: book?.author ?? "", unitPrice, unitsSold, grossRevenue, royaltyPct, authorRoyalty, netRevenue };
+    }).sort((a, b) => b.grossRevenue - a.grossRevenue);
+  }, [periodSales, books]);
+
+  const filteredRows = useMemo(() => {
+    if (!txSearch.trim()) return aggregatedRows;
+    const q = txSearch.toLowerCase();
+    return aggregatedRows.filter(
+      (r) => r.title.toLowerCase().includes(q) || r.isbn.includes(q) || r.author.toLowerCase().includes(q)
+    );
+  }, [aggregatedRows, txSearch]);
+
+  const totals = useMemo(() => ({
+    gross: filteredRows.reduce((s, r) => s + r.grossRevenue, 0),
+    royalties: filteredRows.reduce((s, r) => s + r.authorRoyalty, 0),
+    net: filteredRows.reduce((s, r) => s + r.netRevenue, 0),
+    units: filteredRows.reduce((s, r) => s + r.unitsSold, 0),
+  }), [filteredRows]);
+
+  const exportTransactions = () => {
+    if (filteredRows.length === 0) return;
+    const dateRangeStr = periodRange.from && periodRange.to
+      ? `${format(periodRange.from, "dd/MM/yyyy")} – ${format(periodRange.to, "dd/MM/yyyy")}`
+      : "All Time";
+    const header = "Title,Author,ISBN,Units Sold,Unit Price (CHF),Total Gross (CHF),Royalty %,Author Royalty (CHF),Net Revenue (CHF),Date Range";
+    const rows = filteredRows.map((r) =>
+      [`"${r.title.replace(/"/g, '""')}"`, `"${r.author.replace(/"/g, '""')}"`, r.isbn, r.unitsSold, r.unitPrice.toFixed(2), r.grossRevenue.toFixed(2), r.royaltyPct.toFixed(1), r.authorRoyalty.toFixed(2), r.netRevenue.toFixed(2), `"${dateRangeStr}"`].join(",")
+    );
+    rows.push(`"TOTAL","","",${totals.units},"",${totals.gross.toFixed(2)},"",${totals.royalties.toFixed(2)},${totals.net.toFixed(2)},"${dateRangeStr}"`);
+    downloadCSV([header, ...rows].join("\n"), `transactions-report-${format(new Date(), "yyyy-MM-dd")}.csv`);
+  };
+
+  /* ─── Royalties ─── */
   const royaltiesData = useMemo(() => {
     return books
-      .filter((b) => b.royaltyPercentage > 0)
-      .map((book) => {
-        const bookSales = sales.filter(
-          (s) => s.isbn === book.isbn && REVENUE_TYPES.includes(s.transactionType)
-        );
+      .filter((b: any) => b.royaltyPercentage > 0)
+      .map((book: any) => {
+        const bookSales = sales.filter((s) => s.isbn === book.isbn && REVENUE_TYPES.includes(s.transactionType));
         const totalSalesRevenue = bookSales.reduce((sum, s) => sum + s.price, 0);
         const totalDue = totalSalesRevenue * (book.royaltyPercentage / 100);
-        return {
-          isbn: book.isbn,
-          title: book.title,
-          author: book.author,
-          totalSales: totalSalesRevenue,
-          royaltyPct: book.royaltyPercentage,
-          totalDue,
-        };
+        return { isbn: book.isbn, title: book.title, author: book.author, totalSales: totalSalesRevenue, royaltyPct: book.royaltyPercentage, totalDue };
       })
       .sort((a, b) => b.totalDue - a.totalDue);
   }, [books, sales]);
 
+  /* ─── Stock movements ─── */
   const stockMovementsData = useMemo(() => {
     const filtered = categoryFilter === "all" ? sales : sales.filter((s) => s.transactionType === categoryFilter);
     const grouped: Record<string, { title: string; author: string; isbn: string; movements: Record<string, number> }> = {};
     for (const s of filtered) {
       if (!grouped[s.isbn]) {
-        const book = books.find((b) => b.isbn === s.isbn);
+        const book = books.find((b: any) => b.isbn === s.isbn);
         grouped[s.isbn] = { title: s.title, author: book?.author ?? "", isbn: s.isbn, movements: {} };
       }
       grouped[s.isbn].movements[s.transactionType] = (grouped[s.isbn].movements[s.transactionType] ?? 0) + 1;
@@ -348,7 +385,7 @@ function RoyaltiesAndStockReports({ books, sales, t }: { books: any[]; sales: Sa
     const types = stockCategories.map((c) => c.type);
     const header = ["Title", "Author", "ISBN", ...stockCategories.map((c) => c.label)].join(",");
     const rows = stockMovementsData.map((item) =>
-      [`"${item.title.replace(/"/g, '""')}"`, `"${item.author.replace(/"/g, '""')}"`, item.isbn, ...types.map((t) => item.movements[t] ?? 0)].join(",")
+      [`"${item.title.replace(/"/g, '""')}"`, `"${item.author.replace(/"/g, '""')}"`, item.isbn, ...types.map((tp) => item.movements[tp] ?? 0)].join(",")
     );
     downloadCSV([header, ...rows].join("\n"), `stock-movements-${format(new Date(), "yyyy-MM-dd")}.csv`);
   };
@@ -356,17 +393,110 @@ function RoyaltiesAndStockReports({ books, sales, t }: { books: any[]; sales: Sa
   return (
     <div>
       <h2 className="text-lg font-bold mb-3">{t("reports.title")}</h2>
-      <Tabs defaultValue="royalties" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="royalties" className="gap-2">
+      <Tabs defaultValue="transactions" className="space-y-4">
+        <TabsList className="grid w-full grid-cols-3">
+          <TabsTrigger value="transactions" className="gap-2 text-xs sm:text-sm">
+            <DollarSign className="h-4 w-4" />
+            {t("reports.transactions")}
+          </TabsTrigger>
+          <TabsTrigger value="royalties" className="gap-2 text-xs sm:text-sm">
             <BookOpen className="h-4 w-4" />
             {t("reports.royalties")}
           </TabsTrigger>
-          <TabsTrigger value="stock" className="gap-2">
+          <TabsTrigger value="stock" className="gap-2 text-xs sm:text-sm">
             <ArrowRightLeft className="h-4 w-4" />
             {t("reports.stockCategories")}
           </TabsTrigger>
         </TabsList>
+
+        {/* ─── Aggregated Transactions Tab ─── */}
+        <TabsContent value="transactions" className="space-y-4">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+            <Select value={txPeriod} onValueChange={(v) => setTxPeriod(v as PeriodType)}>
+              <SelectTrigger className="w-40 h-9">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="daily">{t("reports.daily")}</SelectItem>
+                <SelectItem value="weekly">{t("reports.weekly")}</SelectItem>
+                <SelectItem value="monthly">{t("reports.monthly")}</SelectItem>
+                <SelectItem value="all">{t("reports.all")}</SelectItem>
+              </SelectContent>
+            </Select>
+            <div className="relative flex-1 w-full sm:w-auto">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder={t("reports.searchPlaceholder")}
+                value={txSearch}
+                onChange={(e) => setTxSearch(e.target.value)}
+                className="pl-9 h-9"
+              />
+            </div>
+            {filteredRows.length > 0 && (
+              <Button variant="outline" size="sm" className="gap-2 shrink-0" onClick={exportTransactions}>
+                <Download className="h-4 w-4" />
+                {t("reports.exportCSV")}
+              </Button>
+            )}
+          </div>
+
+          <p className="text-xs text-muted-foreground">
+            {t("reports.period")}: <span className="font-semibold text-foreground">{periodRange.label}</span>
+            {txSearch && <> · {filteredRows.length} {t("dash.sales")}</>}
+          </p>
+
+          {filteredRows.length === 0 ? (
+            <div className="text-center py-12 text-muted-foreground">
+              <DollarSign className="h-12 w-12 mx-auto mb-3 opacity-30" />
+              <p>{t("reports.noTransactions")}</p>
+            </div>
+          ) : (
+            <div className="rounded-lg border border-border overflow-hidden">
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="bg-muted/50">
+                      <TableHead className="font-bold">{t("inv.bookTitle")}</TableHead>
+                      <TableHead className="font-bold">{t("inv.author")}</TableHead>
+                      <TableHead className="font-bold text-center">{t("reports.unitsSold")}</TableHead>
+                      <TableHead className="font-bold text-right">{t("reports.unitPrice")}</TableHead>
+                      <TableHead className="font-bold text-right">{t("reports.grossRevenue")}</TableHead>
+                      <TableHead className="font-bold text-right">{t("reports.authorRoyalty")}</TableHead>
+                      <TableHead className="font-bold text-right">{t("reports.netRevenue")}</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredRows.map((r) => (
+                      <TableRow key={r.isbn}>
+                        <TableCell className="font-medium">{r.title}</TableCell>
+                        <TableCell className="text-muted-foreground text-sm">{r.author}</TableCell>
+                        <TableCell className="text-center">
+                          <Badge variant="secondary">{r.unitsSold}</Badge>
+                        </TableCell>
+                        <TableCell className="text-right">CHF {r.unitPrice.toFixed(2)}</TableCell>
+                        <TableCell className="text-right font-semibold">CHF {r.grossRevenue.toFixed(2)}</TableCell>
+                        <TableCell className="text-right text-muted-foreground">
+                          {r.royaltyPct > 0 ? `CHF ${r.authorRoyalty.toFixed(2)}` : "—"}
+                          {r.royaltyPct > 0 && <span className="text-xs ml-1">({r.royaltyPct}%)</span>}
+                        </TableCell>
+                        <TableCell className="text-right font-bold">CHF {r.netRevenue.toFixed(2)}</TableCell>
+                      </TableRow>
+                    ))}
+                    {/* Grand Total – Swiss Red */}
+                    <TableRow className="bg-primary/10 border-t-2 border-primary">
+                      <TableCell className="font-black text-primary" colSpan={2}>{t("reports.grandTotal")}</TableCell>
+                      <TableCell className="text-center font-black text-primary">{totals.units}</TableCell>
+                      <TableCell />
+                      <TableCell className="text-right font-black text-primary">CHF {totals.gross.toFixed(2)}</TableCell>
+                      <TableCell className="text-right font-black text-primary">CHF {totals.royalties.toFixed(2)}</TableCell>
+                      <TableCell className="text-right font-black text-primary">CHF {totals.net.toFixed(2)}</TableCell>
+                    </TableRow>
+                  </TableBody>
+                </Table>
+              </div>
+            </div>
+          )}
+        </TabsContent>
 
         {/* Royalties Tab */}
         <TabsContent value="royalties" className="space-y-4">
@@ -411,13 +541,13 @@ function RoyaltiesAndStockReports({ books, sales, t }: { books: any[]; sales: Sa
                       <TableCell className="text-right font-bold">CHF {r.totalDue.toFixed(2)}</TableCell>
                     </TableRow>
                   ))}
-                  <TableRow className="bg-muted/30 font-bold">
-                    <TableCell colSpan={2}>{t("reports.grandTotal")}</TableCell>
-                    <TableCell className="text-right">
+                  <TableRow className="bg-primary/10 border-t-2 border-primary font-bold">
+                    <TableCell colSpan={2} className="font-black text-primary">{t("reports.grandTotal")}</TableCell>
+                    <TableCell className="text-right font-black text-primary">
                       CHF {royaltiesData.reduce((s, r) => s + r.totalSales, 0).toFixed(2)}
                     </TableCell>
                     <TableCell />
-                    <TableCell className="text-right">
+                    <TableCell className="text-right font-black text-primary">
                       CHF {royaltiesData.reduce((s, r) => s + r.totalDue, 0).toFixed(2)}
                     </TableCell>
                   </TableRow>

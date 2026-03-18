@@ -224,6 +224,25 @@ const translations: Record<string, Record<Language, string>> = {
   "reports.allCategories": { en: "All Categories", de: "Alle Kategorien", fr: "Toutes les catégories" },
   "reports.clearFilter": { en: "Clear", de: "Löschen", fr: "Effacer" },
   "reports.noMovements": { en: "No stock movements recorded.", de: "Keine Bestandsbewegungen erfasst.", fr: "Aucun mouvement de stock enregistré." },
+
+  // Aggregated Transactions Report
+  "reports.transactions": { en: "Transactions", de: "Transaktionen", fr: "Transactions" },
+  "reports.searchPlaceholder": { en: "Search by title, author or ISBN...", de: "Nach Titel, Autor oder ISBN suchen...", fr: "Chercher par titre, auteur ou ISBN..." },
+  "reports.unitsSold": { en: "Units Sold", de: "Verkauft", fr: "Unités vendues" },
+  "reports.unitPrice": { en: "Unit Price", de: "Stückpreis", fr: "Prix unitaire" },
+  "reports.grossRevenue": { en: "Gross Revenue", de: "Bruttoumsatz", fr: "Revenu brut" },
+  "reports.authorRoyalty": { en: "Author Royalty", de: "Autorenhonorar", fr: "Droits d'auteur" },
+  "reports.netRevenue": { en: "Net Revenue", de: "Nettoumsatz", fr: "Revenu net" },
+  "reports.totalGross": { en: "Total Gross", de: "Brutto gesamt", fr: "Brut total" },
+  "reports.totalRoyalties": { en: "Total Royalties", de: "Tantiemen gesamt", fr: "Total droits" },
+  "reports.totalNet": { en: "Total Net", de: "Netto gesamt", fr: "Net total" },
+  "reports.noTransactions": { en: "No transactions for selected period.", de: "Keine Transaktionen für den ausgewählten Zeitraum.", fr: "Aucune transaction pour la période sélectionnée." },
+  "reports.period": { en: "Period", de: "Zeitraum", fr: "Période" },
+  "reports.daily": { en: "Daily", de: "Täglich", fr: "Journalier" },
+  "reports.weekly": { en: "Weekly", de: "Wöchentlich", fr: "Hebdomadaire" },
+  "reports.monthly": { en: "Monthly", de: "Monatlich", fr: "Mensuel" },
+  "reports.all": { en: "All Time", de: "Gesamt", fr: "Tout" },
+  "reports.dateRange": { en: "Date Range", de: "Zeitraum", fr: "Période" },
 };
 
 export function getTranslation(key: string, lang: Language): string {
