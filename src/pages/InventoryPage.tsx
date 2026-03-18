@@ -29,6 +29,7 @@ export default function InventoryPage() {
   const [editAuthor, setEditAuthor] = useState("");
   const [price, setPrice] = useState("");
   const [qty, setQty] = useState("1");
+  const [royalty, setRoyalty] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<typeof books>([]);
   const [importOpen, setImportOpen] = useState(false);
