@@ -60,6 +60,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
           price: Number(s.price),
           method: s.method as PaymentMethod,
           discount: Number(s.discount ?? 0),
+          quantity: Number((s as any).quantity ?? 1),
           timestamp: new Date(s.sold_at).getTime(),
           transactionType: ((s as any).transaction_type ?? "retail") as TransactionType,
           note: (s as any).note ?? "",
