@@ -58,6 +58,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, sess) => {
       if (!isReady.current) return;
+      // Show spinner while we fetch approval status — prevents verification page flash
+      setLoading(true);
       void fetchAccessState(sess).then(() => setLoading(false));
     });
 
