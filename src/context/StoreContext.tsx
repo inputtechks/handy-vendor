@@ -48,6 +48,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
           salePrice: Number(b.sale_price),
           quantity: b.quantity,
           category: (b as any).category ?? "",
+          royaltyPercentage: Number((b as any).royalty_percentage ?? 0),
         })));
       }
 
