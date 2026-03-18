@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useState, useRef, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import type { User, Session } from "@supabase/supabase-js";
 
@@ -21,20 +21,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
   const [isApproved, setIsApproved] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
+  const isReady = useRef(false);
 
-  const syncAccessState = async (sess: Session | null) => {
+  const fetchAccessState = useCallback(async (sess: Session | null) => {
+    if (!sess?.user) {
+      setSession(null);
+      setUser(null);
+      setIsApproved(false);
+      setIsAdmin(false);
+      return;
+    }
+
+    setSession(sess);
+    setUser(sess.user);
+
     try {
-      if (!sess?.user) {
-        setSession(null);
-        setUser(null);
-        setIsApproved(false);
-        setIsAdmin(false);
-        return;
-      }
-
-      setSession(sess);
-      setUser(sess.user);
-
       const [{ data: profile }, { data: roles }] = await Promise.all([
         supabase.from("profiles").select("is_approved").eq("id", sess.user.id).single(),
         supabase.from("user_roles").select("role").eq("user_id", sess.user.id),
@@ -46,22 +47,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       console.error("Auth sync error:", err);
       setIsApproved(false);
       setIsAdmin(false);
-    } finally {
-      setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
+    // 1. Set up listener FIRST but don't act until initial session is restored
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, sess) => {
-      void syncAccessState(sess);
+      if (!isReady.current) return; // ignore events before initial session restore
+      void fetchAccessState(sess).then(() => setLoading(false));
     });
 
+    // 2. Restore session from storage — this is the single source of truth on mount
     supabase.auth.getSession().then(({ data: { session: sess } }) => {
-      void syncAccessState(sess);
+      void fetchAccessState(sess).then(() => {
+        isReady.current = true;
+        setLoading(false);
+      });
     });
 
     return () => subscription.unsubscribe();
-  }, []);
+  }, [fetchAccessState]);
 
   const signUp = async (email: string, password: string) => {
     const { error } = await supabase.auth.signUp({
