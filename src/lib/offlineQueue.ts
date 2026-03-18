@@ -14,7 +14,7 @@ interface PendingSale {
   discount: number;
   transaction_type: string;
   note: string;
-  created_at: string;
+  sold_at: string;
 }
 
 function openDB(): Promise<IDBDatabase> {
