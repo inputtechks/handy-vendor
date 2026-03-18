@@ -217,7 +217,7 @@ export default function DashboardPage() {
 }
 
 /* ─── Period helpers ─── */
-type PeriodType = "daily" | "weekly" | "monthly" | "all";
+type PeriodType = "daily" | "weekly" | "monthly" | "all" | "custom";
 
 function getPeriodRange(period: PeriodType): { from?: Date; to?: Date; label: string } {
   const now = new Date();
@@ -263,6 +263,8 @@ function ReportsSection({ books, sales, t }: { books: any[]; sales: Sale[]; t: (
   const [categoryFilter, setCategoryFilter] = useState<string>("all");
   const [txPeriod, setTxPeriod] = useState<PeriodType>("all");
   const [txSearch, setTxSearch] = useState("");
+  const [customFrom, setCustomFrom] = useState<Date | undefined>();
+  const [customTo, setCustomTo] = useState<Date | undefined>();
 
   const stockCategories: { type: TransactionType; label: string }[] = [
     { type: "pilon", label: t("tx.pilon") },
@@ -273,7 +275,19 @@ function ReportsSection({ books, sales, t }: { books: any[]; sales: Sale[]; t: (
   ];
 
   /* ─── Aggregated Transactions ─── */
-  const periodRange = useMemo(() => getPeriodRange(txPeriod), [txPeriod]);
+  const periodRange = useMemo(() => {
+    if (txPeriod === "custom") {
+      const label = customFrom && customTo
+        ? `${format(customFrom, "dd/MM/yyyy")} – ${format(customTo, "dd/MM/yyyy")}`
+        : customFrom
+          ? `${format(customFrom, "dd/MM/yyyy")} – …`
+          : customTo
+            ? `… – ${format(customTo, "dd/MM/yyyy")}`
+            : t("reports.custom");
+      return { from: customFrom ? startOfDay(customFrom) : undefined, to: customTo ? endOfDay(customTo) : undefined, label };
+    }
+    return getPeriodRange(txPeriod);
+  }, [txPeriod, customFrom, customTo, t]);
 
   const periodSales = useMemo(() => {
     const revSales = sales.filter((s) => REVENUE_TYPES.includes(s.transactionType));
@@ -419,8 +433,8 @@ function ReportsSection({ books, sales, t }: { books: any[]; sales: Sale[]; t: (
 
         {/* ─── Aggregated Transactions Tab ─── */}
         <TabsContent value="transactions" className="space-y-4">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
-            <Select value={txPeriod} onValueChange={(v) => setTxPeriod(v as PeriodType)}>
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 flex-wrap">
+            <Select value={txPeriod} onValueChange={(v) => { setTxPeriod(v as PeriodType); if (v !== "custom") { setCustomFrom(undefined); setCustomTo(undefined); } }}>
               <SelectTrigger className="w-40 h-9">
                 <SelectValue />
               </SelectTrigger>
@@ -429,8 +443,41 @@ function ReportsSection({ books, sales, t }: { books: any[]; sales: Sale[]; t: (
                 <SelectItem value="weekly">{t("reports.weekly")}</SelectItem>
                 <SelectItem value="monthly">{t("reports.monthly")}</SelectItem>
                 <SelectItem value="all">{t("reports.all")}</SelectItem>
+                <SelectItem value="custom">{t("reports.custom")}</SelectItem>
               </SelectContent>
             </Select>
+            {txPeriod === "custom" && (
+              <div className="flex items-center gap-2">
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button variant="outline" size="sm" className={cn("gap-1.5 text-xs h-9", !customFrom && "text-muted-foreground")}>
+                      <CalendarIcon className="h-3.5 w-3.5" />
+                      {customFrom ? format(customFrom, "dd/MM/yyyy") : t("reports.from")}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar mode="single" selected={customFrom} onSelect={setCustomFrom} initialFocus className={cn("p-3 pointer-events-auto")} />
+                  </PopoverContent>
+                </Popover>
+                <span className="text-muted-foreground text-xs">–</span>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button variant="outline" size="sm" className={cn("gap-1.5 text-xs h-9", !customTo && "text-muted-foreground")}>
+                      <CalendarIcon className="h-3.5 w-3.5" />
+                      {customTo ? format(customTo, "dd/MM/yyyy") : t("reports.to")}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar mode="single" selected={customTo} onSelect={setCustomTo} initialFocus className={cn("p-3 pointer-events-auto")} />
+                  </PopoverContent>
+                </Popover>
+                {(customFrom || customTo) && (
+                  <Button variant="ghost" size="sm" className="h-9 px-2" onClick={() => { setCustomFrom(undefined); setCustomTo(undefined); }}>
+                    <X className="h-3.5 w-3.5" />
+                  </Button>
+                )}
+              </div>
+            )}
             <div className="relative flex-1 w-full sm:w-auto">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
