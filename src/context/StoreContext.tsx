@@ -157,9 +157,10 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
           price: finalPrice,
           method,
           discount,
+          quantity: qty,
           transaction_type: transactionType,
           note,
-        })
+        } as any)
         .select()
         .single();
 
