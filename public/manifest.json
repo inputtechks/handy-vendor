@@ -1,0 +1,28 @@
+{
+  "name": "HelveLitt",
+  "short_name": "HelveLitt",
+  "description": "Swiss technology at the service of books. Manage stock and sell books at festivals.",
+  "start_url": "/",
+  "display": "standalone",
+  "theme_color": "#E60000",
+  "background_color": "#F9F9F9",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/pwa-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/pwa-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "/pwa-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

@@ -17,6 +17,8 @@ import VerificationPage from "@/pages/VerificationPage";
 import AdminPage from "@/pages/AdminPage";
 import NotFound from "./pages/NotFound";
 import { Loader2 } from "lucide-react";
+import { OfflineIndicator } from "@/components/OfflineIndicator";
+import { InstallPrompt } from "@/components/InstallPrompt";
 
 const queryClient = new QueryClient();
 
@@ -94,6 +96,8 @@ const App = () => (
           <StoreProvider>
             <Toaster />
             <Sonner />
+            <OfflineIndicator />
+            <InstallPrompt />
             <BrowserRouter>
               <AppRoutes />
             </BrowserRouter>
