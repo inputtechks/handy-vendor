@@ -234,6 +234,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
         price: 0,
         method: "none",
         discount: 0,
+        quantity: qty,
         timestamp: new Date(data.sold_at).getTime(),
         transactionType,
         note,

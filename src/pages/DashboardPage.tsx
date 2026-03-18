@@ -295,7 +295,7 @@ function ReportsSection({ books, sales, t }: { books: any[]; sales: Sale[]; t: (
     }
 
     return Object.entries(grouped).map(([isbn, { sales: bookSales, book }]) => {
-      const unitsSold = bookSales.length;
+      const unitsSold = bookSales.reduce((sum, s) => sum + (s.quantity ?? 1), 0);
       const unitPrice = book?.salePrice ?? (bookSales[0]?.price || 0);
       const grossRevenue = bookSales.reduce((sum, s) => sum + s.price, 0);
       const royaltyPct = book?.royaltyPercentage ?? 0;
