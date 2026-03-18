@@ -296,11 +296,15 @@ function ReportsSection({ books, sales, t }: { books: any[]; sales: Sale[]; t: (
 
     return Object.entries(grouped).map(([isbn, { sales: bookSales, book }]) => {
       const unitsSold = bookSales.reduce((sum, s) => sum + (s.quantity ?? 1), 0);
-      const unitPrice = book?.salePrice ?? (bookSales[0]?.price || 0);
-      const grossRevenue = bookSales.reduce((sum, s) => sum + s.price, 0);
+      // Gross revenue in centimes to avoid floating-point drift
+      const grossCentimes = bookSales.reduce((sum, s) => sum + Math.round(s.price * 100), 0);
+      const grossRevenue = grossCentimes / 100;
+      // Derive unit price from actual sales data so Units × UnitPrice = Gross
+      const unitPrice = unitsSold > 0 ? grossRevenue / unitsSold : 0;
       const royaltyPct = book?.royaltyPercentage ?? 0;
-      const authorRoyalty = grossRevenue * (royaltyPct / 100);
-      const netRevenue = grossRevenue - authorRoyalty;
+      const authorRoyaltyCentimes = Math.round(grossCentimes * royaltyPct / 100);
+      const authorRoyalty = authorRoyaltyCentimes / 100;
+      const netRevenue = (grossCentimes - authorRoyaltyCentimes) / 100;
 
       return { isbn, title: book?.title ?? bookSales[0]?.title ?? isbn, author: book?.author ?? "", unitPrice, unitsSold, grossRevenue, royaltyPct, authorRoyalty, netRevenue };
     }).sort((a, b) => b.grossRevenue - a.grossRevenue);
