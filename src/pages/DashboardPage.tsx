@@ -4,13 +4,17 @@ import { useAuth } from "@/context/AuthContext";
 import { useLanguage } from "@/context/LanguageContext";
 import { LanguageToggle } from "@/components/LanguageToggle";
 import { format, startOfDay, endOfDay } from "date-fns";
-import { DollarSign, Banknote, CreditCard, Smartphone, AlertTriangle, Download, LogOut, ArrowRightLeft, CalendarIcon, X } from "lucide-react";
+import { DollarSign, Banknote, CreditCard, Smartphone, AlertTriangle, Download, LogOut, ArrowRightLeft, CalendarIcon, X, BookOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { exportSalesToCSV, exportRevenueByCategoryCSV } from "@/lib/exportSales";
 import { REVENUE_TYPES, ZERO_REVENUE_TYPES } from "@/types/book";
-import type { Sale } from "@/types/book";
+import type { Sale, TransactionType } from "@/types/book";
 import { cn } from "@/lib/utils";
 
 function DateRangePicker({
