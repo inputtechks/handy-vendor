@@ -85,6 +85,7 @@ export type Database = {
           method: string
           note: string
           price: number
+          quantity: number
           sold_at: string
           title: string
           transaction_type: string
@@ -97,6 +98,7 @@ export type Database = {
           method: string
           note?: string
           price: number
+          quantity?: number
           sold_at?: string
           title: string
           transaction_type?: string
@@ -109,6 +111,7 @@ export type Database = {
           method?: string
           note?: string
           price?: number
+          quantity?: number
           sold_at?: string
           title?: string
           transaction_type?: string

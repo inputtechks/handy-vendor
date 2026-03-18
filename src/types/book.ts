@@ -45,6 +45,7 @@ export interface Sale {
   price: number;
   method: PaymentMethod;
   discount: number;
+  quantity: number;
   timestamp: number;
   transactionType: TransactionType;
   note: string;

@@ -60,6 +60,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
           price: Number(s.price),
           method: s.method as PaymentMethod,
           discount: Number(s.discount ?? 0),
+          quantity: Number((s as any).quantity ?? 1),
           timestamp: new Date(s.sold_at).getTime(),
           transactionType: ((s as any).transaction_type ?? "retail") as TransactionType,
           note: (s as any).note ?? "",
@@ -156,9 +157,10 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
           price: finalPrice,
           method,
           discount,
+          quantity: qty,
           transaction_type: transactionType,
           note,
-        })
+        } as any)
         .select()
         .single();
 
@@ -171,6 +173,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
         price: finalPrice,
         method,
         discount,
+        quantity: qty,
         timestamp: new Date(data.sold_at).getTime(),
         transactionType,
         note,
@@ -215,9 +218,10 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
           price: 0,
           method: "none",
           discount: 0,
+          quantity: qty,
           transaction_type: transactionType,
           note,
-        })
+        } as any)
         .select()
         .single();
 
@@ -230,6 +234,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
         price: 0,
         method: "none",
         discount: 0,
+        quantity: qty,
         timestamp: new Date(data.sold_at).getTime(),
         transactionType,
         note,

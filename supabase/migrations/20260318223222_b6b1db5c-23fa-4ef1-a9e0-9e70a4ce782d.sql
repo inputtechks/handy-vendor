@@ -1,0 +1,1 @@
+ALTER TABLE public.sales ADD COLUMN quantity integer NOT NULL DEFAULT 1;
