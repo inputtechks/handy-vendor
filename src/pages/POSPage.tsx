@@ -160,14 +160,48 @@ export default function POSPage() {
   const finalizeSale = async (method: "cash" | "card" | "twint") => {
     setProcessing(true);
     let allOk = true;
-    for (const item of cart) {
-      const discountPerUnit = item.book.salePrice * (item.discountPct / 100);
-      const sale = await sellBook(item.book.isbn, method, item.qty, discountPerUnit, "retail");
-      if (!sale) {
-        allOk = false;
-        toast.error(`Failed: ${item.book.title}`);
+
+    if (isOnline) {
+      // Online: use normal sellBook flow (updates local state + DB)
+      for (const item of cart) {
+        const discountPerUnit = item.book.salePrice * (item.discountPct / 100);
+        const sale = await sellBook(item.book.isbn, method, item.qty, discountPerUnit, "retail");
+        if (!sale) {
+          allOk = false;
+          toast.error(`Failed: ${item.book.title}`);
+        }
+      }
+    } else {
+      // Offline: queue each item into IndexedDB
+      if (!user) { allOk = false; } else {
+        for (const item of cart) {
+          const discountPerUnit = item.book.salePrice * (item.discountPct / 100);
+          const finalPrice = Math.max(0, (item.book.salePrice - discountPerUnit) * item.qty);
+          try {
+            await queueOfflineSale({
+              vendor_id: user.id,
+              isbn: item.book.isbn,
+              title: item.book.title,
+              price: finalPrice,
+              method,
+              discount: discountPerUnit,
+              transaction_type: "retail",
+              note: "",
+              created_at: new Date().toISOString(),
+            });
+          } catch {
+            allOk = false;
+            toast.error(`Failed to queue: ${item.book.title}`);
+          }
+        }
+        if (allOk) {
+          const count = await getPendingSales();
+          setPendingCount(count.length);
+          toast.info("Sale saved offline — will sync when back online", { icon: <CloudOff className="h-4 w-4" /> });
+        }
       }
     }
+
     setProcessing(false);
     if (allOk) {
       setLastMethod(method);
