@@ -372,7 +372,7 @@ function ReportsSection({ books, sales, t }: { books: any[]; sales: Sale[]; t: (
   const categorySummary = useMemo(() => {
     const summary: Record<string, number> = {};
     for (const cat of stockCategories) {
-      summary[cat.type] = sales.filter((s) => s.transactionType === cat.type).length;
+      summary[cat.type] = sales.filter((s) => s.transactionType === cat.type).reduce((sum, s) => sum + (s.quantity ?? 1), 0);
     }
     return summary;
   }, [sales]);
