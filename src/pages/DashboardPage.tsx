@@ -364,7 +364,7 @@ function ReportsSection({ books, sales, t }: { books: any[]; sales: Sale[]; t: (
         const book = books.find((b: any) => b.isbn === s.isbn);
         grouped[s.isbn] = { title: s.title, author: book?.author ?? "", isbn: s.isbn, movements: {} };
       }
-      grouped[s.isbn].movements[s.transactionType] = (grouped[s.isbn].movements[s.transactionType] ?? 0) + 1;
+      grouped[s.isbn].movements[s.transactionType] = (grouped[s.isbn].movements[s.transactionType] ?? 0) + (s.quantity ?? 1);
     }
     return Object.values(grouped);
   }, [sales, books, categoryFilter]);
