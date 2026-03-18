@@ -15,6 +15,7 @@ interface PendingSale {
   transaction_type: string;
   note: string;
   sold_at: string;
+  quantity: number;
 }
 
 function openDB(): Promise<IDBDatabase> {
@@ -65,7 +66,7 @@ export async function syncOfflineSales(): Promise<number> {
   const pending = await getPendingSales();
   if (pending.length === 0) return 0;
 
-  const rows = pending.map(({ id: _id, ...rest }) => rest);
+  const rows = pending.map(({ id: _id, ...rest }) => ({ ...rest, quantity: rest.quantity ?? 1 }));
 
   const { error } = await supabase.from("sales").insert(rows as any);
   if (error) {
