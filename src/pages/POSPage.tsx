@@ -132,23 +132,21 @@ export default function POSPage() {
     );
   }, []);
 
-  // --- Scan handler: add to cart & keep scanning ---
+  // --- Scan handler: add to cart & close camera ---
   const handleScan = useCallback(
     (code: string) => {
       const book = getBook(code);
       if (book) {
         addToCart(book);
         toast.success(`${book.title} ${t("pos.addedToCart")}`);
-        // Scanner will re-mount because key changes via retryKey internally,
-        // but we stay in scanning stage for continuous scanning
       } else {
         toast.error(t("pos.notFound"));
       }
-      // Re-activate scanner for next scan
+      // Close camera after scan — user presses "Scan Another" to reopen
       setStage("idle");
-      setTimeout(() => handleStartScan(), 300);
+      resetCamera();
     },
-    [getBook, addToCart, t]
+    [getBook, addToCart, t, resetCamera]
   );
 
   const handleSearchSelect = (book: Book) => {
