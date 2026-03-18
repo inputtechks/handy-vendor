@@ -211,7 +211,7 @@ export default function POSPage() {
               discount: discountPerUnit,
               transaction_type: "retail",
               note: "",
-              created_at: new Date().toISOString(),
+              sold_at: new Date().toISOString(),
             });
           } catch {
             allOk = false;
