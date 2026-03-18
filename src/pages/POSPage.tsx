@@ -257,9 +257,21 @@ export default function POSPage() {
           <h1 className="text-2xl font-black tracking-tight">{t("pos.title")}</h1>
           <div className="flex items-center gap-3">
             {pendingCount > 0 && (
-              <div className="flex items-center gap-1 text-xs font-semibold text-warning bg-warning/10 px-2 py-1 rounded-full">
-                <CloudOff className="h-3.5 w-3.5" />
-                <span>{pendingCount} pending</span>
+              <div className="flex items-center gap-1.5">
+                <div className="flex items-center gap-1 text-xs font-semibold text-warning bg-warning/10 px-2 py-1 rounded-full">
+                  <CloudOff className="h-3.5 w-3.5" />
+                  <span>{pendingCount} pending</span>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-7 w-7 rounded-full"
+                  onClick={handleSyncNow}
+                  disabled={syncing || !isOnline}
+                  title="Sync now"
+                >
+                  <RefreshCw className={`h-3.5 w-3.5 ${syncing ? "animate-spin" : ""}`} />
+                </Button>
               </div>
             )}
             {cart.length > 0 && (
