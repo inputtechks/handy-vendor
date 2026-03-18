@@ -217,7 +217,7 @@ export default function DashboardPage() {
 }
 
 /* ─── Period helpers ─── */
-type PeriodType = "daily" | "weekly" | "monthly" | "all";
+type PeriodType = "daily" | "weekly" | "monthly" | "all" | "custom";
 
 function getPeriodRange(period: PeriodType): { from?: Date; to?: Date; label: string } {
   const now = new Date();
