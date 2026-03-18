@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, useEffect, useRef } from "react";
 import { useStore } from "@/context/StoreContext";
 import { useLanguage } from "@/context/LanguageContext";
 import { useAuth } from "@/context/AuthContext";
@@ -44,19 +44,19 @@ export default function POSPage() {
   const [pendingCount, setPendingCount] = useState(0);
   const [syncing, setSyncing] = useState(false);
 
-  // Check pending offline sales count on mount & after sync
-  useState(() => {
+  // Check pending offline sales count on mount
+  useEffect(() => {
     getPendingSales().then((s) => setPendingCount(s.length)).catch(() => {});
-  });
+  }, []);
 
   // Auto-sync when coming back online
-  const prevOnlineRef = useState({ current: isOnline })[0];
-  useState(() => {
+  const prevOnlineRef = useRef(isOnline);
+  useEffect(() => {
     if (isOnline && !prevOnlineRef.current) {
       handleSyncNow();
     }
     prevOnlineRef.current = isOnline;
-  });
+  }, [isOnline]);
 
   const handleSyncNow = async () => {
     if (syncing || !isOnline) return;
@@ -211,7 +211,7 @@ export default function POSPage() {
               discount: discountPerUnit,
               transaction_type: "retail",
               note: "",
-              created_at: new Date().toISOString(),
+              sold_at: new Date().toISOString(),
             });
           } catch {
             allOk = false;
