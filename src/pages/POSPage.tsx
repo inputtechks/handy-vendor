@@ -212,6 +212,7 @@ export default function POSPage() {
               transaction_type: "retail",
               note: "",
               sold_at: new Date().toISOString(),
+              quantity: item.qty,
             });
           } catch {
             allOk = false;

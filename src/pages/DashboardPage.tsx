@@ -318,12 +318,16 @@ function ReportsSection({ books, sales, t }: { books: any[]; sales: Sale[]; t: (
     );
   }, [aggregatedRows, txSearch]);
 
-  const totals = useMemo(() => ({
-    gross: filteredRows.reduce((s, r) => s + r.grossRevenue, 0),
-    royalties: filteredRows.reduce((s, r) => s + r.authorRoyalty, 0),
-    net: filteredRows.reduce((s, r) => s + r.netRevenue, 0),
-    units: filteredRows.reduce((s, r) => s + r.unitsSold, 0),
-  }), [filteredRows]);
+  const totals = useMemo(() => {
+    const grossC = filteredRows.reduce((s, r) => s + Math.round(r.grossRevenue * 100), 0);
+    const royC = filteredRows.reduce((s, r) => s + Math.round(r.authorRoyalty * 100), 0);
+    return {
+      gross: grossC / 100,
+      royalties: royC / 100,
+      net: (grossC - royC) / 100,
+      units: filteredRows.reduce((s, r) => s + r.unitsSold, 0),
+    };
+  }, [filteredRows]);
 
   const exportTransactions = () => {
     if (filteredRows.length === 0) return;
