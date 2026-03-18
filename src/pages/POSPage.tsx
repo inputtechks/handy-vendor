@@ -1,18 +1,21 @@
 import { useState, useCallback, useMemo } from "react";
 import { useStore } from "@/context/StoreContext";
 import { useLanguage } from "@/context/LanguageContext";
+import { useAuth } from "@/context/AuthContext";
+import { useOnlineStatus } from "@/hooks/useOnlineStatus";
 import { BarcodeScanner } from "@/components/BarcodeScanner";
 import { BookInfoCard } from "@/components/BookInfoCard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
   ScanBarcode, Search, Banknote, CreditCard, Check, XCircle,
-  Minus, Plus, Smartphone, Trash2, ShoppingCart, Percent,
+  Minus, Plus, Smartphone, Trash2, ShoppingCart, Percent, CloudOff,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import type { Book } from "@/types/book";
 import { useCameraStream } from "@/hooks/useCameraStream";
+import { queueOfflineSale, getPendingSales, syncOfflineSales } from "@/lib/offlineQueue";
 
 interface CartItem {
   book: Book;
