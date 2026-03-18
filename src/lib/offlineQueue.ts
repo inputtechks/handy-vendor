@@ -15,6 +15,7 @@ interface PendingSale {
   transaction_type: string;
   note: string;
   sold_at: string;
+  quantity: number;
 }
 
 function openDB(): Promise<IDBDatabase> {
