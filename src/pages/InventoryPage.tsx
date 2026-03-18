@@ -55,6 +55,7 @@ export default function InventoryPage() {
       salePrice: p,
       quantity: q,
       category: "",
+      royaltyPercentage: parseFloat(royalty) || 0,
     });
 
     setStage("added");
