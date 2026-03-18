@@ -156,6 +156,7 @@ const translations: Record<string, Record<Language, string>> = {
   "dash.export": { en: "Export", de: "Export", fr: "Export" },
   "dash.stockAdjustments": { en: "Stock Adjustments", de: "Bestandsanpassungen", fr: "Ajustements de stock" },
   "dash.movements": { en: "movements", de: "Bewegungen", fr: "mouvements" },
+  "dash.books": { en: "books", de: "Bücher", fr: "livres" },
   "dash.lowStock": { en: "Low Stock", de: "Niedrige Bestände", fr: "Stock bas" },
   "dash.left": { en: "left", de: "übrig", fr: "restant(s)" },
   "dash.transactions": { en: "Transactions", de: "Transaktionen", fr: "Transactions" },

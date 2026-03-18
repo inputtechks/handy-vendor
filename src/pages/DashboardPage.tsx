@@ -364,7 +364,7 @@ function ReportsSection({ books, sales, t }: { books: any[]; sales: Sale[]; t: (
         const book = books.find((b: any) => b.isbn === s.isbn);
         grouped[s.isbn] = { title: s.title, author: book?.author ?? "", isbn: s.isbn, movements: {} };
       }
-      grouped[s.isbn].movements[s.transactionType] = (grouped[s.isbn].movements[s.transactionType] ?? 0) + 1;
+      grouped[s.isbn].movements[s.transactionType] = (grouped[s.isbn].movements[s.transactionType] ?? 0) + (s.quantity ?? 1);
     }
     return Object.values(grouped);
   }, [sales, books, categoryFilter]);
@@ -372,7 +372,7 @@ function ReportsSection({ books, sales, t }: { books: any[]; sales: Sale[]; t: (
   const categorySummary = useMemo(() => {
     const summary: Record<string, number> = {};
     for (const cat of stockCategories) {
-      summary[cat.type] = sales.filter((s) => s.transactionType === cat.type).length;
+      summary[cat.type] = sales.filter((s) => s.transactionType === cat.type).reduce((sum, s) => sum + (s.quantity ?? 1), 0);
     }
     return summary;
   }, [sales]);
@@ -576,7 +576,7 @@ function ReportsSection({ books, sales, t }: { books: any[]; sales: Sale[]; t: (
               >
                 <p className="text-xs font-medium text-muted-foreground">{cat.label}</p>
                 <p className="text-2xl font-black">{categorySummary[cat.type] ?? 0}</p>
-                <p className="text-xs text-muted-foreground">{t("dash.movements")}</p>
+                <p className="text-xs text-muted-foreground">{t("dash.books")}</p>
               </div>
             ))}
           </div>
