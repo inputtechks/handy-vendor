@@ -685,7 +685,6 @@ function ReportsSection({ books, sales, t }: { books: any[]; sales: Sale[]; t: (
     </div>
   );
 }
-/* ─── Royalties & Stock Reports (inline) ─── */
 
 function downloadCSV(csv: string, filename: string) {
   const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
