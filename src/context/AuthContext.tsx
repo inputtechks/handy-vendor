@@ -15,6 +15,52 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
+const APPROVAL_CACHE_KEY = "hv_approved_users_v1";
+
+type ApprovalCache = Record<string, true>;
+
+function readApprovalCache(): ApprovalCache {
+  if (typeof window === "undefined") return {};
+
+  try {
+    const raw = window.localStorage.getItem(APPROVAL_CACHE_KEY);
+    if (!raw) return {};
+
+    const parsed = JSON.parse(raw) as Record<string, boolean>;
+    const normalized: ApprovalCache = {};
+
+    for (const [userId, approved] of Object.entries(parsed ?? {})) {
+      if (approved === true) normalized[userId] = true;
+    }
+
+    return normalized;
+  } catch {
+    return {};
+  }
+}
+
+function writeApprovalCache(cache: ApprovalCache) {
+  if (typeof window === "undefined") return;
+  window.localStorage.setItem(APPROVAL_CACHE_KEY, JSON.stringify(cache));
+}
+
+function getCachedApproval(userId: string): boolean {
+  const cache = readApprovalCache();
+  return cache[userId] === true;
+}
+
+function setCachedApproval(userId: string, approved: boolean) {
+  const cache = readApprovalCache();
+
+  if (approved) {
+    cache[userId] = true;
+  } else {
+    delete cache[userId];
+  }
+
+  writeApprovalCache(cache);
+}
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
@@ -36,15 +82,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setSession(sess);
     setUser(sess.user);
 
+    const cachedApproved = getCachedApproval(sess.user.id);
+    if (cachedApproved) {
+      // Immediate unlock for previously approved users (prevents verification flicker/offline false negatives).
+      setIsApproved(true);
+    }
+
     try {
       const [{ data: profile, error: profileError }, { data: roles, error: rolesError }] = await Promise.all([
         supabase.from("profiles").select("is_approved").eq("id", sess.user.id).maybeSingle(),
         supabase.from("user_roles").select("role").eq("user_id", sess.user.id),
       ]);
 
-      // Keep previous access state on transient failures; do not wrongly downgrade verified users.
       if (!profileError) {
-        setIsApproved(profile?.is_approved ?? false);
+        const approved = profile?.is_approved ?? false;
+        setIsApproved(approved);
+        setCachedApproval(sess.user.id, approved);
+      } else if (cachedApproved) {
+        setIsApproved(true);
       }
 
       if (!rolesError) {
@@ -52,13 +107,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     } catch (err) {
       console.error("Auth sync error:", err);
+      if (cachedApproved) {
+        setIsApproved(true);
+      }
     }
   }, []);
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, sess) => {
       if (!isReady.current) return;
-      // Show spinner while we fetch approval status — prevents verification page flash
+      // Show spinner while we fetch approval status — prevents verification page flash.
       setLoading(true);
       void fetchAccessState(sess).then(() => setLoading(false));
     });
