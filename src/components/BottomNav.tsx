@@ -31,6 +31,10 @@ export function BottomNav() {
           <BarChart3 className="h-5 w-5" />
           <span className="text-[10px] font-bold">{t("nav.report")}</span>
         </NavLink>
+        <NavLink to="/dashboard/reports" className={linkClass}>
+          <FileText className="h-5 w-5" />
+          <span className="text-[10px] font-bold">{t("nav.reports")}</span>
+        </NavLink>
         {isAdmin && (
           <NavLink to="/dashboard/admin" className={linkClass}>
             <Shield className="h-5 w-5" />
