@@ -61,7 +61,7 @@ export default function InventoryPage() {
     setStage("added");
     setTimeout(() => {
       setStage("idle");
-      setIsbn(""); setEditTitle(""); setEditAuthor(""); setPrice(""); setQty("1");
+      setIsbn(""); setEditTitle(""); setEditAuthor(""); setPrice(""); setQty("1"); setRoyalty("");
     }, 1500);
   };
 
