@@ -244,6 +244,9 @@ const translations: Record<string, Record<Language, string>> = {
   "reports.monthly": { en: "Monthly", de: "Monatlich", fr: "Mensuel" },
   "reports.all": { en: "All Time", de: "Gesamt", fr: "Tout" },
   "reports.dateRange": { en: "Date Range", de: "Zeitraum", fr: "Période" },
+  "reports.custom": { en: "Custom Range", de: "Benutzerdefiniert", fr: "Personnalisé" },
+  "reports.from": { en: "From", de: "Von", fr: "Du" },
+  "reports.to": { en: "To", de: "Bis", fr: "Au" },
 };
 
 export function getTranslation(key: string, lang: Language): string {
