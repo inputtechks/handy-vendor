@@ -72,7 +72,7 @@ export default function InventoryPage() {
 
   const reset = () => {
     setStage("idle"); resetCamera();
-    setIsbn(""); setEditTitle(""); setEditAuthor(""); setPrice(""); setQty("1");
+    setIsbn(""); setEditTitle(""); setEditAuthor(""); setPrice(""); setQty("1"); setRoyalty("");
   };
 
   const handleStartScan = async () => {
