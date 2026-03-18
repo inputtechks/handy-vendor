@@ -48,6 +48,7 @@ export function EditBookModal({ book, open, onOpenChange }: EditBookModalProps) 
       author: author.trim() || book.author,
       salePrice: p,
       quantity: q,
+      royaltyPercentage: parseFloat(royalty) || 0,
     });
     setSaving(false);
     onOpenChange(false);
