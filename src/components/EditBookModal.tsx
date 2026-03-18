@@ -23,6 +23,7 @@ export function EditBookModal({ book, open, onOpenChange }: EditBookModalProps) 
   const [author, setAuthor] = useState("");
   const [price, setPrice] = useState("");
   const [quantity, setQuantity] = useState("");
+  const [royalty, setRoyalty] = useState("");
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
@@ -31,6 +32,7 @@ export function EditBookModal({ book, open, onOpenChange }: EditBookModalProps) 
       setAuthor(book.author);
       setPrice(book.salePrice.toString());
       setQuantity(book.quantity.toString());
+      setRoyalty((book.royaltyPercentage ?? 0).toString());
     }
   }, [book]);
 
@@ -46,6 +48,7 @@ export function EditBookModal({ book, open, onOpenChange }: EditBookModalProps) 
       author: author.trim() || book.author,
       salePrice: p,
       quantity: q,
+      royaltyPercentage: parseFloat(royalty) || 0,
     });
     setSaving(false);
     onOpenChange(false);
@@ -79,6 +82,10 @@ export function EditBookModal({ book, open, onOpenChange }: EditBookModalProps) 
             <div>
               <label className="text-sm font-semibold text-muted-foreground mb-1 block">{t("inv.quantity")}</label>
               <Input type="number" min="0" value={quantity} onChange={(e) => setQuantity(e.target.value)} className="h-11 text-lg font-bold bg-secondary text-center" />
+            </div>
+            <div>
+              <label className="text-sm font-semibold text-muted-foreground mb-1 block">{t("inv.royaltyPct")}</label>
+              <Input type="number" step="0.1" min="0" max="100" value={royalty} onChange={(e) => setRoyalty(e.target.value)} className="h-11 text-lg font-bold bg-secondary text-center" />
             </div>
           </div>
         </div>

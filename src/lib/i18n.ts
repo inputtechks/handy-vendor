@@ -200,6 +200,30 @@ const translations: Record<string, Record<Language, string>> = {
   "bulk.importedCount": { en: "{count} books imported", de: "{count} Bücher importiert", fr: "{count} livres importés" },
   "bulk.skippedCount": { en: "{count} skipped", de: "{count} übersprungen", fr: "{count} ignoré(s)" },
   "bulk.importExcel": { en: "Import Excel", de: "Excel importieren", fr: "Importer Excel" },
+
+  // Inventory – royalty
+  "inv.royaltyPct": { en: "Royalty %", de: "Tantieme %", fr: "Droits d'auteur %" },
+
+  // Nav
+  "nav.reports": { en: "Reports", de: "Berichte", fr: "Rapports" },
+  "nav.logout": { en: "Logout", de: "Abmelden", fr: "Déconnexion" },
+
+  // Reports page
+  "reports.title": { en: "Reports", de: "Berichte", fr: "Rapports" },
+  "reports.subtitle": { en: "Royalties & stock movement analysis", de: "Tantiemen & Bestandsbewegungen", fr: "Droits d'auteur & mouvements de stock" },
+  "reports.royalties": { en: "Royalties", de: "Tantiemen", fr: "Droits d'auteur" },
+  "reports.stockCategories": { en: "Stock Categories", de: "Bestandskategorien", fr: "Catégories de stock" },
+  "reports.booksWithRoyalties": { en: "books with royalties", de: "Bücher mit Tantiemen", fr: "livres avec droits" },
+  "reports.noRoyalties": { en: "No books with royalty percentages configured.", de: "Keine Bücher mit Tantiemen konfiguriert.", fr: "Aucun livre avec des droits configurés." },
+  "reports.totalSales": { en: "Total Sales", de: "Gesamtumsatz", fr: "Ventes totales" },
+  "reports.royaltyPct": { en: "Royalty %", de: "Tantieme %", fr: "Droits %" },
+  "reports.totalDue": { en: "Total Due", de: "Fällig", fr: "Total dû" },
+  "reports.grandTotal": { en: "Grand Total", de: "Gesamtsumme", fr: "Total général" },
+  "reports.exportCSV": { en: "Export CSV", de: "CSV Export", fr: "Exporter CSV" },
+  "reports.filterBy": { en: "Filter by category", de: "Nach Kategorie filtern", fr: "Filtrer par catégorie" },
+  "reports.allCategories": { en: "All Categories", de: "Alle Kategorien", fr: "Toutes les catégories" },
+  "reports.clearFilter": { en: "Clear", de: "Löschen", fr: "Effacer" },
+  "reports.noMovements": { en: "No stock movements recorded.", de: "Keine Bestandsbewegungen erfasst.", fr: "Aucun mouvement de stock enregistré." },
 };
 
 export function getTranslation(key: string, lang: Language): string {

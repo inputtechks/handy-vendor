@@ -1,5 +1,5 @@
 import { NavLink } from "react-router-dom";
-import { Package, ShoppingCart, BarChart3, ArrowRightLeft, Shield, LogOut } from "lucide-react";
+import { Package, ShoppingCart, BarChart3, ArrowRightLeft, Shield, LogOut, FileText } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
 import { useAuth } from "@/context/AuthContext";
 
@@ -30,6 +30,10 @@ export function BottomNav() {
         <NavLink to="/dashboard/report" className={linkClass}>
           <BarChart3 className="h-5 w-5" />
           <span className="text-[10px] font-bold">{t("nav.report")}</span>
+        </NavLink>
+        <NavLink to="/dashboard/reports" className={linkClass}>
+          <FileText className="h-5 w-5" />
+          <span className="text-[10px] font-bold">{t("nav.reports")}</span>
         </NavLink>
         {isAdmin && (
           <NavLink to="/dashboard/admin" className={linkClass}>

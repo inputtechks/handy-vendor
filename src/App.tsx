@@ -12,6 +12,7 @@ import InventoryPage from "@/pages/InventoryPage";
 import POSPage from "@/pages/POSPage";
 import MovementsPage from "@/pages/MovementsPage";
 import DashboardPage from "@/pages/DashboardPage";
+import ReportsPage from "@/pages/ReportsPage";
 import AuthPage from "@/pages/AuthPage";
 import VerificationPage from "@/pages/VerificationPage";
 import AdminPage from "@/pages/AdminPage";
@@ -53,6 +54,7 @@ function AppRoutes() {
           <Route path="/dashboard/sell" element={<POSPage />} />
           <Route path="/dashboard/movements" element={<MovementsPage />} />
           <Route path="/dashboard/report" element={<DashboardPage />} />
+          <Route path="/dashboard/reports" element={<ReportsPage />} />
           <Route path="/dashboard/admin" element={<AdminPage />} />
           <Route path="/" element={<Navigate to="/dashboard" replace />} />
           <Route path="*" element={<Navigate to="/dashboard" replace />} />
@@ -80,6 +82,7 @@ function AppRoutes() {
         <Route path="/dashboard/sell" element={<POSPage />} />
         <Route path="/dashboard/movements" element={<MovementsPage />} />
         <Route path="/dashboard/report" element={<DashboardPage />} />
+        <Route path="/dashboard/reports" element={<ReportsPage />} />
         <Route path="/" element={<Navigate to="/dashboard" replace />} />
         <Route path="*" element={<Navigate to="/dashboard" replace />} />
       </Routes>

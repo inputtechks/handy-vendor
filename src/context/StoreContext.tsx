@@ -48,6 +48,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
           salePrice: Number(b.sale_price),
           quantity: b.quantity,
           category: (b as any).category ?? "",
+          royaltyPercentage: Number((b as any).royalty_percentage ?? 0),
         })));
       }
 
@@ -94,6 +95,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
         sale_price: book.salePrice,
         quantity: book.quantity,
         category: book.category,
+        royalty_percentage: book.royaltyPercentage ?? 0,
       } as any);
       if (!error) {
         setBooks((prev) => [book, ...prev]);
@@ -109,6 +111,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     if (updates.coverUrl !== undefined) dbUpdates.cover_url = updates.coverUrl;
     if (updates.salePrice !== undefined) dbUpdates.sale_price = updates.salePrice;
     if (updates.quantity !== undefined) dbUpdates.quantity = updates.quantity;
+    if (updates.royaltyPercentage !== undefined) dbUpdates.royalty_percentage = updates.royaltyPercentage;
 
     const { error } = await supabase.from("books").update(dbUpdates).eq("vendor_id", user.id).eq("isbn", isbn);
     if (!error) {

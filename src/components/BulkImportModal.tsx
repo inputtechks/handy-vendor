@@ -160,6 +160,7 @@ export function BulkImportModal({ open, onOpenChange }: Props) {
             salePrice: row.price,
             quantity: row.quantity,
             category: row.category,
+            royaltyPercentage: 0,
           });
           imported++;
         }
@@ -172,6 +173,7 @@ export function BulkImportModal({ open, onOpenChange }: Props) {
           salePrice: row.price,
           quantity: row.quantity,
           category: row.category,
+          royaltyPercentage: 0,
         });
         imported++;
       }

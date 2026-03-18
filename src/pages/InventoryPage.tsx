@@ -29,6 +29,7 @@ export default function InventoryPage() {
   const [editAuthor, setEditAuthor] = useState("");
   const [price, setPrice] = useState("");
   const [qty, setQty] = useState("1");
+  const [royalty, setRoyalty] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<typeof books>([]);
   const [importOpen, setImportOpen] = useState(false);
@@ -54,12 +55,13 @@ export default function InventoryPage() {
       salePrice: p,
       quantity: q,
       category: "",
+      royaltyPercentage: parseFloat(royalty) || 0,
     });
 
     setStage("added");
     setTimeout(() => {
       setStage("idle");
-      setIsbn(""); setEditTitle(""); setEditAuthor(""); setPrice(""); setQty("1");
+      setIsbn(""); setEditTitle(""); setEditAuthor(""); setPrice(""); setQty("1"); setRoyalty("");
     }, 1500);
   };
 
@@ -70,7 +72,7 @@ export default function InventoryPage() {
 
   const reset = () => {
     setStage("idle"); resetCamera();
-    setIsbn(""); setEditTitle(""); setEditAuthor(""); setPrice(""); setQty("1");
+    setIsbn(""); setEditTitle(""); setEditAuthor(""); setPrice(""); setQty("1"); setRoyalty("");
   };
 
   const handleStartScan = async () => {
@@ -151,6 +153,10 @@ export default function InventoryPage() {
               <div>
                 <label className="text-sm font-semibold text-muted-foreground mb-1 block">{t("inv.author")}</label>
                 <Input placeholder={t("inv.enterAuthor")} value={editAuthor} onChange={(e) => setEditAuthor(e.target.value)} className="h-12 text-base bg-secondary" />
+              </div>
+              <div>
+                <label className="text-sm font-semibold text-muted-foreground mb-1 block">{t("inv.royaltyPct")}</label>
+                <Input type="number" step="0.1" min="0" max="100" placeholder="0" value={royalty} onChange={(e) => setRoyalty(e.target.value)} className="h-12 text-base bg-secondary" />
               </div>
             </div>
             <div className="grid grid-cols-2 gap-3">
