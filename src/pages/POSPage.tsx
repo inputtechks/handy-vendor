@@ -42,11 +42,37 @@ export default function POSPage() {
   const [changeAmount, setChangeAmount] = useState<number | null>(null);
   const [processing, setProcessing] = useState(false);
   const [pendingCount, setPendingCount] = useState(0);
+  const [syncing, setSyncing] = useState(false);
 
   // Check pending offline sales count on mount & after sync
   useState(() => {
     getPendingSales().then((s) => setPendingCount(s.length)).catch(() => {});
   });
+
+  // Auto-sync when coming back online
+  const prevOnlineRef = useState({ current: isOnline })[0];
+  useState(() => {
+    if (isOnline && !prevOnlineRef.current) {
+      handleSyncNow();
+    }
+    prevOnlineRef.current = isOnline;
+  });
+
+  const handleSyncNow = async () => {
+    if (syncing || !isOnline) return;
+    setSyncing(true);
+    try {
+      const count = await syncOfflineSales();
+      if (count > 0) {
+        toast.success(`Synced ${count} offline sale(s)`);
+      }
+      const remaining = await getPendingSales();
+      setPendingCount(remaining.length);
+    } catch {
+      toast.error("Sync failed, will retry later");
+    }
+    setSyncing(false);
+  };
 
   const itemTotal = (item: CartItem) => {
     const discounted = item.book.salePrice * (1 - item.discountPct / 100);
