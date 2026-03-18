@@ -23,6 +23,7 @@ export type Database = {
           id: string
           isbn: string
           quantity: number
+          royalty_percentage: number
           sale_price: number
           title: string
           vendor_id: string
@@ -35,6 +36,7 @@ export type Database = {
           id?: string
           isbn: string
           quantity?: number
+          royalty_percentage?: number
           sale_price: number
           title?: string
           vendor_id: string
@@ -47,6 +49,7 @@ export type Database = {
           id?: string
           isbn?: string
           quantity?: number
+          royalty_percentage?: number
           sale_price?: number
           title?: string
           vendor_id?: string

@@ -1,0 +1,1 @@
+ALTER TABLE public.books ADD COLUMN royalty_percentage numeric NOT NULL DEFAULT 0;
