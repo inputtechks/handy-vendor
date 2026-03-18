@@ -685,8 +685,6 @@ function ReportsSection({ books, sales, t }: { books: any[]; sales: Sale[]; t: (
     </div>
   );
 }
-
-function downloadCSV(csv: string, filename: string) {
   const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
