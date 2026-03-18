@@ -263,6 +263,8 @@ function ReportsSection({ books, sales, t }: { books: any[]; sales: Sale[]; t: (
   const [categoryFilter, setCategoryFilter] = useState<string>("all");
   const [txPeriod, setTxPeriod] = useState<PeriodType>("all");
   const [txSearch, setTxSearch] = useState("");
+  const [customFrom, setCustomFrom] = useState<Date | undefined>();
+  const [customTo, setCustomTo] = useState<Date | undefined>();
 
   const stockCategories: { type: TransactionType; label: string }[] = [
     { type: "pilon", label: t("tx.pilon") },
