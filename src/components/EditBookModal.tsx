@@ -32,6 +32,7 @@ export function EditBookModal({ book, open, onOpenChange }: EditBookModalProps) 
       setAuthor(book.author);
       setPrice(book.salePrice.toString());
       setQuantity(book.quantity.toString());
+      setRoyalty((book.royaltyPercentage ?? 0).toString());
     }
   }, [book]);
 
