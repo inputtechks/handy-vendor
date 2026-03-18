@@ -1,18 +1,21 @@
 import { useState, useCallback, useMemo } from "react";
 import { useStore } from "@/context/StoreContext";
 import { useLanguage } from "@/context/LanguageContext";
+import { useAuth } from "@/context/AuthContext";
+import { useOnlineStatus } from "@/hooks/useOnlineStatus";
 import { BarcodeScanner } from "@/components/BarcodeScanner";
 import { BookInfoCard } from "@/components/BookInfoCard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
   ScanBarcode, Search, Banknote, CreditCard, Check, XCircle,
-  Minus, Plus, Smartphone, Trash2, ShoppingCart, Percent,
+  Minus, Plus, Smartphone, Trash2, ShoppingCart, Percent, CloudOff,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import type { Book } from "@/types/book";
 import { useCameraStream } from "@/hooks/useCameraStream";
+import { queueOfflineSale, getPendingSales, syncOfflineSales } from "@/lib/offlineQueue";
 
 interface CartItem {
   book: Book;
@@ -24,8 +27,10 @@ type Stage = "idle" | "scanning" | "checkout" | "cash-change" | "done" | "error"
 
 export default function POSPage() {
   const { getBook, sellBook, searchBooks } = useStore();
+  const { user } = useAuth();
   const { cameraId, requestCamera, reset: resetCamera } = useCameraStream();
   const { t } = useLanguage();
+  const isOnline = useOnlineStatus();
 
   const [stage, setStage] = useState<Stage>("idle");
   const [cart, setCart] = useState<CartItem[]>([]);
@@ -36,6 +41,12 @@ export default function POSPage() {
   const [amountReceived, setAmountReceived] = useState("");
   const [changeAmount, setChangeAmount] = useState<number | null>(null);
   const [processing, setProcessing] = useState(false);
+  const [pendingCount, setPendingCount] = useState(0);
+
+  // Check pending offline sales count on mount & after sync
+  useState(() => {
+    getPendingSales().then((s) => setPendingCount(s.length)).catch(() => {});
+  });
 
   const itemTotal = (item: CartItem) => {
     const discounted = item.book.salePrice * (1 - item.discountPct / 100);
@@ -149,14 +160,48 @@ export default function POSPage() {
   const finalizeSale = async (method: "cash" | "card" | "twint") => {
     setProcessing(true);
     let allOk = true;
-    for (const item of cart) {
-      const discountPerUnit = item.book.salePrice * (item.discountPct / 100);
-      const sale = await sellBook(item.book.isbn, method, item.qty, discountPerUnit, "retail");
-      if (!sale) {
-        allOk = false;
-        toast.error(`Failed: ${item.book.title}`);
+
+    if (isOnline) {
+      // Online: use normal sellBook flow (updates local state + DB)
+      for (const item of cart) {
+        const discountPerUnit = item.book.salePrice * (item.discountPct / 100);
+        const sale = await sellBook(item.book.isbn, method, item.qty, discountPerUnit, "retail");
+        if (!sale) {
+          allOk = false;
+          toast.error(`Failed: ${item.book.title}`);
+        }
+      }
+    } else {
+      // Offline: queue each item into IndexedDB
+      if (!user) { allOk = false; } else {
+        for (const item of cart) {
+          const discountPerUnit = item.book.salePrice * (item.discountPct / 100);
+          const finalPrice = Math.max(0, (item.book.salePrice - discountPerUnit) * item.qty);
+          try {
+            await queueOfflineSale({
+              vendor_id: user.id,
+              isbn: item.book.isbn,
+              title: item.book.title,
+              price: finalPrice,
+              method,
+              discount: discountPerUnit,
+              transaction_type: "retail",
+              note: "",
+              created_at: new Date().toISOString(),
+            });
+          } catch {
+            allOk = false;
+            toast.error(`Failed to queue: ${item.book.title}`);
+          }
+        }
+        if (allOk) {
+          const count = await getPendingSales();
+          setPendingCount(count.length);
+          toast.info("Sale saved offline — will sync when back online", { icon: <CloudOff className="h-4 w-4" /> });
+        }
       }
     }
+
     setProcessing(false);
     if (allOk) {
       setLastMethod(method);
@@ -186,12 +231,20 @@ export default function POSPage() {
       <header className="sticky top-0 z-20 bg-background/95 backdrop-blur border-b border-border px-4 py-3">
         <div className="flex items-center justify-between">
           <h1 className="text-2xl font-black tracking-tight">{t("pos.title")}</h1>
-          {cart.length > 0 && (
-            <div className="flex items-center gap-2 text-sm font-bold text-muted-foreground">
-              <ShoppingCart className="h-5 w-5" />
-              <span>{cart.reduce((s, i) => s + i.qty, 0)}</span>
-            </div>
-          )}
+          <div className="flex items-center gap-3">
+            {pendingCount > 0 && (
+              <div className="flex items-center gap-1 text-xs font-semibold text-warning bg-warning/10 px-2 py-1 rounded-full">
+                <CloudOff className="h-3.5 w-3.5" />
+                <span>{pendingCount} pending</span>
+              </div>
+            )}
+            {cart.length > 0 && (
+              <div className="flex items-center gap-2 text-sm font-bold text-muted-foreground">
+                <ShoppingCart className="h-5 w-5" />
+                <span>{cart.reduce((s, i) => s + i.qty, 0)}</span>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Search bar */}
