@@ -21,6 +21,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
   const [isApproved, setIsApproved] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
+
   const isReady = useRef(false);
 
   const fetchAccessState = useCallback(async (sess: Session | null) => {
@@ -36,29 +37,31 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setUser(sess.user);
 
     try {
-      const [{ data: profile }, { data: roles }] = await Promise.all([
-        supabase.from("profiles").select("is_approved").eq("id", sess.user.id).single(),
+      const [{ data: profile, error: profileError }, { data: roles, error: rolesError }] = await Promise.all([
+        supabase.from("profiles").select("is_approved").eq("id", sess.user.id).maybeSingle(),
         supabase.from("user_roles").select("role").eq("user_id", sess.user.id),
       ]);
 
-      setIsApproved(profile?.is_approved ?? false);
-      setIsAdmin(roles?.some((r: any) => r.role === "admin") ?? false);
+      // Keep previous access state on transient failures; do not wrongly downgrade verified users.
+      if (!profileError) {
+        setIsApproved(profile?.is_approved ?? false);
+      }
+
+      if (!rolesError) {
+        setIsAdmin(roles?.some((r: { role: string }) => r.role === "admin") ?? false);
+      }
     } catch (err) {
       console.error("Auth sync error:", err);
-      setIsApproved(false);
-      setIsAdmin(false);
     }
   }, []);
 
   useEffect(() => {
-    // 1. Set up listener FIRST but don't act until initial session is restored
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, sess) => {
-      if (!isReady.current) return; // ignore events before initial session restore
+      if (!isReady.current) return;
       void fetchAccessState(sess).then(() => setLoading(false));
     });
 
-    // 2. Restore session from storage — this is the single source of truth on mount
-    supabase.auth.getSession().then(({ data: { session: sess } }) => {
+    void supabase.auth.getSession().then(({ data: { session: sess } }) => {
       void fetchAccessState(sess).then(() => {
         isReady.current = true;
         setLoading(false);
@@ -67,6 +70,29 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     return () => subscription.unsubscribe();
   }, [fetchAccessState]);
+
+  // Re-check approval while user is pending (focus + interval) so approved users stop seeing verification promptly.
+  useEffect(() => {
+    if (!session?.user || isApproved === true) return;
+
+    const recheck = () => {
+      void fetchAccessState(session);
+    };
+
+    const onVisibilityChange = () => {
+      if (document.visibilityState === "visible") recheck();
+    };
+
+    window.addEventListener("focus", recheck);
+    document.addEventListener("visibilitychange", onVisibilityChange);
+    const interval = window.setInterval(recheck, 10000);
+
+    return () => {
+      window.removeEventListener("focus", recheck);
+      document.removeEventListener("visibilitychange", onVisibilityChange);
+      window.clearInterval(interval);
+    };
+  }, [session, isApproved, fetchAccessState]);
 
   const signUp = async (email: string, password: string) => {
     const { error } = await supabase.auth.signUp({
