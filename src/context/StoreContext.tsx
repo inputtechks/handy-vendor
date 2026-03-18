@@ -95,6 +95,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
         sale_price: book.salePrice,
         quantity: book.quantity,
         category: book.category,
+        royalty_percentage: book.royaltyPercentage ?? 0,
       } as any);
       if (!error) {
         setBooks((prev) => [book, ...prev]);
