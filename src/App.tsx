@@ -96,6 +96,8 @@ const App = () => (
           <StoreProvider>
             <Toaster />
             <Sonner />
+            <OfflineIndicator />
+            <InstallPrompt />
             <BrowserRouter>
               <AppRoutes />
             </BrowserRouter>
