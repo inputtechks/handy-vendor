@@ -576,7 +576,7 @@ function ReportsSection({ books, sales, t }: { books: any[]; sales: Sale[]; t: (
               >
                 <p className="text-xs font-medium text-muted-foreground">{cat.label}</p>
                 <p className="text-2xl font-black">{categorySummary[cat.type] ?? 0}</p>
-                <p className="text-xs text-muted-foreground">{t("dash.movements")}</p>
+                <p className="text-xs text-muted-foreground">{t("dash.books")}</p>
               </div>
             ))}
           </div>
