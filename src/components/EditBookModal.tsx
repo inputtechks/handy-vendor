@@ -23,6 +23,7 @@ export function EditBookModal({ book, open, onOpenChange }: EditBookModalProps) 
   const [author, setAuthor] = useState("");
   const [price, setPrice] = useState("");
   const [quantity, setQuantity] = useState("");
+  const [royalty, setRoyalty] = useState("");
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
